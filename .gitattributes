@@ -1,0 +1,5 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Exclude TextMesh Pro files from language statistics
+"Assets/TextMesh Pro/**" linguist-generated=true linguist-vendored=true
