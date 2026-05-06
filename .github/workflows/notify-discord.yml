@@ -1,0 +1,93 @@
+name: Discord Notification
+
+on:
+  workflow_call:
+    inputs:
+      status:
+        description: 'Build status (success/failure/cancelled)'
+        required: true
+        type: string
+      version:
+        description: 'Build version'
+        required: true
+        type: string
+      workflow-name:
+        description: 'Workflow name'
+        required: true
+        type: string
+      job-name:
+        description: 'Job name that triggered notification'
+        required: false
+        type: string
+        default: 'Build'
+    secrets:
+      DISCORD_WEBHOOK_URL:
+        required: true
+
+jobs:
+  notify:
+    name: Send Discord Notification
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Prepare notification data
+        id: prepare
+        run: |
+          STATUS="${{ inputs.status }}"
+          
+          # ステータスに応じた色とアイコン
+          if [ "$STATUS" == "success" ]; then
+            COLOR="3066993"  # 緑
+            EMOJI="✅"
+            TITLE="ビルド成功"
+          elif [ "$STATUS" == "failure" ]; then
+            COLOR="15158332"  # 赤
+            EMOJI="❌"
+            TITLE="ビルド失敗"
+          else
+            COLOR="15844367"  # オレンジ
+            EMOJI="⚠️"
+            TITLE="ビルドキャンセル"
+          fi
+          
+          echo "color=${COLOR}" >> $GITHUB_OUTPUT
+          echo "emoji=${EMOJI}" >> $GITHUB_OUTPUT
+          echo "title=${TITLE}" >> $GITHUB_OUTPUT
+
+      - name: Send Discord notification
+        uses: tsickert/discord-webhook@v6.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: "GitHub Actions"
+          avatar-url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+          embed-title: "${{ steps.prepare.outputs.emoji }} ${{ steps.prepare.outputs.title }}: ${{ inputs.workflow-name }}"
+          embed-description: |
+            **バージョン:** `${{ inputs.version }}`
+            **ステータス:** ${{ inputs.status }}
+            **ジョブ:** ${{ inputs.job-name }}
+          embed-color: ${{ steps.prepare.outputs.color }}
+          embed-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          embed-timestamp: ${{ github.event.head_commit.timestamp }}
+          embed-fields: |
+            [
+              {
+                "name": "📦 リポジトリ",
+                "value": "[${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})",
+                "inline": true
+              },
+              {
+                "name": "🔀 ブランチ/タグ",
+                "value": "`${{ github.ref_name }}`",
+                "inline": true
+              },
+              {
+                "name": "👤 実行者",
+                "value": "${{ github.actor }}",
+                "inline": true
+              },
+              {
+                "name": "🔗 ワークフロー",
+                "value": "[詳細を見る](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+                "inline": false
+              }
+            ]

@@ -1,0 +1,184 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g., 1.0.0)'
+        required: true
+        type: string
+      create_release:
+        description: 'Create GitHub Release?'
+        required: true
+        type: boolean
+        default: true
+      draft_release:
+        description: 'Create as draft release?'
+        required: true
+        type: boolean
+        default: false
+      prerelease:
+        description: 'Mark as pre-release?'
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  init:
+    name: Initialize
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      should_release: ${{ steps.check.outputs.should_release }}
+      is_draft: ${{ steps.check.outputs.is_draft }}
+      is_prerelease: ${{ steps.check.outputs.is_prerelease }}
+    steps:
+      - name: Determine Version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            VERSION="${{ inputs.version }}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Check release settings
+        id: check
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]] || [[ "${{ inputs.create_release }}" == "true" ]]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "is_draft=false" >> $GITHUB_OUTPUT
+          else
+            echo "is_draft=${{ inputs.draft_release }}" >> $GITHUB_OUTPUT
+          fi
+          
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            if [[ "${{ github.ref }}" =~ (beta|alpha|rc) ]]; then
+              echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            else
+              echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "is_prerelease=${{ inputs.prerelease }}" >> $GITHUB_OUTPUT
+          fi
+
+  # Unityのビルド実行
+  build-unity:
+    name: Build Unity
+    needs: init
+    uses: ./.github/workflows/build-unity.yml
+    with:
+      version: ${{ needs.init.outputs.version }}
+    secrets:
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+  # インストーラーの作成
+  create-installer:
+    name: Create Installer
+    needs: [init, build-unity]
+    uses: ./.github/workflows/create-installer.yml
+    with:
+      version: ${{ needs.init.outputs.version }}
+      unity-artifact-name: ${{ needs.build-unity.outputs.artifact-name }}
+
+  # GitHubリリースの作成
+  release:
+    name: Create GitHub Release
+    needs: [init, create-installer]
+    if: needs.init.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Download Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: installer-v${{ needs.init.outputs.version }}
+
+      - name: Determine tag name
+        id: tag
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          else
+            TAG_NAME="v${{ needs.init.outputs.version }}"
+          fi
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.tag_name }}
+          name: Game Launcher ${{ steps.tag.outputs.tag_name }}
+          body: |
+            ## Game Launcher ${{ steps.tag.outputs.tag_name }}
+            
+            ### 📥 インストール方法
+            1. 下の Assets から `GameLauncher-Setup-v${{ needs.init.outputs.version }}.exe` をダウンロード
+            2. ダウンロードしたファイルを実行してインストール
+            3. スタートメニューから「Game Launcher」を起動
+            
+            ### 📝 ビルド情報
+            - **バージョン**: ${{ needs.init.outputs.version }}
+            - **ビルド番号**: #${{ github.run_number }}
+            
+            ### 🔧 システム要件
+            - Windows 10/11 (64-bit)
+          files: GameLauncher-Setup-v${{ needs.init.outputs.version }}.exe
+          draft: ${{ needs.init.outputs.is_draft == 'true' }}
+          prerelease: ${{ needs.init.outputs.is_prerelease == 'true' }}
+          generate_release_notes: true
+
+  # 成功時の通知
+  notify-success:
+    name: Notify Success
+    needs: [init, release]
+    if: success()
+    uses: ./.github/workflows/notify-discord.yml
+    with:
+      status: "success"
+      version: ${{ needs.init.outputs.version }}
+      workflow-name: "Game Launcher リリース"
+      job-name: "リリース作成完了"
+    secrets:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+  # 失敗時の通知
+  notify-failure:
+    name: Notify Failure
+    needs: [init, build-unity, create-installer, release]
+    if: failure()
+    uses: ./.github/workflows/notify-discord.yml
+    with:
+      status: "failure"
+      version: ${{ needs.init.outputs.version }}
+      workflow-name: "Game Launcher ビルド"
+      job-name: "ビルドエラー"
+    secrets:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+  # キャンセル時の通知
+  notify-cancelled:
+    name: Notify Cancelled
+    needs: [init, build-unity, create-installer, release]
+    if: cancelled()
+    uses: ./.github/workflows/notify-discord.yml
+    with:
+      status: "cancelled"
+      version: ${{ needs.init.outputs.version }}
+      workflow-name: "Game Launcher ビルド"
+      job-name: "ビルドキャンセル"
+    secrets:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
