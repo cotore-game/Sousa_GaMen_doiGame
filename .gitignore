@@ -43,6 +43,7 @@ ExportedObj/
 *.csproj
 *.unityproj
 *.sln
+*.slnx
 *.suo
 *.tmp
 *.user
@@ -103,3 +104,4 @@ CaseSensitiveTest
 
 # Editor generated files
 .vsconfig
+.vscode
