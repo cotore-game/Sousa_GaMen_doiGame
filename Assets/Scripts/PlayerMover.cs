@@ -8,6 +8,8 @@ public class PlayerMover : MonoBehaviour
     private float MoveSpeed;
     [SerializeField,Header("JumpSpeed")]
     private float JumpSpeed;
+    [SerializeField, Header("HitPoint")]
+    private int hp;
     private Vector2 inputDirection;
     private Rigidbody2D rigid;
     private bool bJump;
@@ -23,6 +25,7 @@ public class PlayerMover : MonoBehaviour
     void Update()
     {
         Move();
+        Debug.Log(hp);
     }
 
     private void Move()
@@ -35,6 +38,24 @@ public class PlayerMover : MonoBehaviour
         if(collision.gameObject.tag == "Floor")
         {
             bJump = false;
+        }
+        if(collision.gameObject.tag == "Enemy")
+        {
+            HitEnemy(collision.gameObject);
+        }
+    }
+
+    private void HitEnemy(GameObject enemy)
+    {
+        float halfScaleY = transform.lossyScale.y / 2.0f;
+        float enemyHalfScaleY = enemy.transform.lossyScale.y /2.0f;
+        if(transform.position.y - (halfScaleY -0.1f) >= enemy.transform.position.y + (enemyHalfScaleY - 0.1f))
+        {
+            Destroy(enemy);
+        }
+        else
+        {
+          
         }
     }
 
@@ -49,5 +70,10 @@ public class PlayerMover : MonoBehaviour
 
         rigid.AddForce(Vector2.up * JumpSpeed, ForceMode2D.Impulse);
         bJump = true;
+    }
+
+    public void Damege(int damage)
+    {
+        hp = Mathf.Max(hp - damage, 0);
     }
 }
