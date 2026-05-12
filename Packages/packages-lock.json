@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.cotore.csv4unity": {
+      "version": "https://github.com/cotore-game/CSV4Unity.git?path=Assets/Plugins/CSVLoader",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "31b19afdadeb6705e9d092049ad7b28b0dae8b06"
+    },
     "com.cysharp.unitask": {
       "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
       "depth": 0,
