@@ -109,10 +109,10 @@ TextureImporter:
       name: HP3_3_0
       rect:
         serializedVersion: 2
-        x: 17
-        y: 1378
-        width: 59
-        height: 55
+        x: 0
+        y: 1377
+        width: 227
+        height: 63
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -127,55 +127,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: HP3_3_1
-      rect:
-        serializedVersion: 2
-        x: 80
-        y: 1386
-        width: 62
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: c98f01869e2539d10800000000000000
-      internalID: 2131138211103176860
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: HP3_3_2
-      rect:
-        serializedVersion: 2
-        x: 147
-        y: 1384
-        width: 66
-        height: 54
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b9fe92d9f3e716e90800000000000000
-      internalID: -7034202331291193445
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 77f05395c21be604f98c386f62611509
     internalID: 0
     vertices: []
     indices: 
@@ -186,8 +142,6 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       HP3_3_0: 6307783009847180720
-      HP3_3_1: 2131138211103176860
-      HP3_3_2: -7034202331291193445
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
