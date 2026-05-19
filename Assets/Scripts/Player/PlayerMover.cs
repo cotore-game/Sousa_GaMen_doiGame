@@ -72,6 +72,14 @@ public class PlayerMover : MonoBehaviour
         }
     }
 
+    private void Dead()
+    {
+        if(hp <=0)
+        {
+            Destroy(gameObject);
+        }
+    }
+
     public void OnMove(InputAction.CallbackContext context)
     {
         inputDirection = context.ReadValue<Vector2>();
@@ -88,6 +96,7 @@ public class PlayerMover : MonoBehaviour
     public void Damege(int damage)
     {
         hp = Mathf.Max(hp - damage, 0);
+        Dead();
     }
 
     public int GetHP()

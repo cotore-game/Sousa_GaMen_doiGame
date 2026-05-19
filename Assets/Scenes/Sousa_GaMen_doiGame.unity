@@ -934,8 +934,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c7bee16b9397504bb599277222aeef8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShakeTime: 0.25
-  ShakeMagnitude: 0.25
+  ShakeTime: 0.5
+  ShakeMagnitude: 0.5
 --- !u!1001 &6934365200530209405
 PrefabInstance:
   m_ObjectHideFlags: 0
