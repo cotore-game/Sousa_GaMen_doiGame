@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -27,10 +28,12 @@ public class PlayerMover : MonoBehaviour
         Move();
         Debug.Log(hp);
         LookMoveDirec();
+        HitFloor();
     }
 
     private void Move()
     {
+        if(bJump)return;
         rigid.linearVelocity = new Vector2(inputDirection.x * MoveSpeed, rigid.linearVelocity.y);
     }
 
@@ -48,13 +51,28 @@ public class PlayerMover : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if(collision.gameObject.tag == "Floor")
+       
+       // if(collision.gameObject.tag == "Enemy")
+        //{
+        //  HitEnemy(collision.gameObject);
+        //}
+    }
+
+    private void HitFloor()
+    {
+        int layerMask = LayerMask.GetMask("Floor");
+        Vector3 rayPos = transform.position - new Vector3(0.0f, transform.lossyScale.y / 2.0f);
+        Vector3 raySize = new Vector3(transform.lossyScale.x -0.1f, 0.1f);
+        RaycastHit2D rayHit = Physics2D.BoxCast(rayPos, raySize, 0.0f, Vector2.zero, 0.0f, layerMask);
+        if(rayHit.transform == null)
+        {
+            bJump = true;
+            return;        
+        }
+
+        if(rayHit.transform.tag == "Floor" && bJump)
         {
             bJump = false;
-        }
-        if(collision.gameObject.tag == "Enemy")
-        {
-            HitEnemy(collision.gameObject);
         }
     }
 
@@ -90,7 +108,6 @@ public class PlayerMover : MonoBehaviour
         if (!context.performed || bJump) return;
 
         rigid.AddForce(Vector2.up * JumpSpeed, ForceMode2D.Impulse);
-        bJump = true;
     }
 
     public void Damege(int damage)
