@@ -285,7 +285,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4615715553985389127, guid: cf808812b607cf343897da5b16321ab4, type: 3}
       propertyPath: m_Constraints
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 5897021648125987170, guid: cf808812b607cf343897da5b16321ab4, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
