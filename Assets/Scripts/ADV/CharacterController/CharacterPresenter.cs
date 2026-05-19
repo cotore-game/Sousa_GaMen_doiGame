@@ -72,8 +72,8 @@ namespace ADV.Presentation
 
             // 位置計算（n分割）
             int count = characters.Count;
-            float spacing = 1920f / (count + 1);
-            float startX = -1920f / 2 + spacing;
+            float spacing = 2560f / (count + 1);
+            float startX = -2560f / 2 + spacing;
 
             var fadeInTasks = new List<UniTask>();
             var newActiveChars = new Dictionary<string, CharacterView>();
@@ -140,7 +140,7 @@ namespace ADV.Presentation
                 return null;
             }
 
-            string resourcePath = $"Characters/{characterName}/{expression}";
+            string resourcePath = $"Novel/{characterName}/{expression}";
 
             // キャッシュチェック
             if (_spriteCache.TryGetValue(resourcePath, out var cachedSprite))
