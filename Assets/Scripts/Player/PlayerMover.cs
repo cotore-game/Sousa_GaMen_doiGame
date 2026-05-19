@@ -26,11 +26,24 @@ public class PlayerMover : MonoBehaviour
     {
         Move();
         Debug.Log(hp);
+        LookMoveDirec();
     }
 
     private void Move()
     {
         rigid.linearVelocity = new Vector2(inputDirection.x * MoveSpeed, rigid.linearVelocity.y);
+    }
+
+    private void LookMoveDirec()
+    {
+        if(inputDirection.x > 0.0f)
+        {
+            transform.eulerAngles = Vector3.zero;
+        }
+        else if(inputDirection.x < 0.0f)
+        {
+            transform.eulerAngles = new Vector3(0.0f,180.0f,0.0f);
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -55,7 +68,7 @@ public class PlayerMover : MonoBehaviour
         }
         else
         {
-          
+          enemy.GetComponent<Enemy>().PlayerDamage(this);
         }
     }
 
@@ -75,5 +88,10 @@ public class PlayerMover : MonoBehaviour
     public void Damege(int damage)
     {
         hp = Mathf.Max(hp - damage, 0);
+    }
+
+    public int GetHP()
+    {
+        return hp;
     }
 }

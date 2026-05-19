@@ -27,8 +27,8 @@ public class Enemy : MonoBehaviour
         rigid.linearVelocity = new Vector2(Vector2.left.x * MoveSpeed, rigid.linearVelocityY);
     }
 
-    private void PlayerDamage(PlayerConnectionInitiateMode player)
+    public void PlayerDamage(PlayerMover player)
     {
-        
+        player.Damege(AttackPower);
     }
 }
