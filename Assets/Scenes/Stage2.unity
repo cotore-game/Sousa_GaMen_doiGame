@@ -283,9 +283,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy
       objectReference: {fileID: 0}
+    - target: {fileID: 4615715553985389127, guid: cf808812b607cf343897da5b16321ab4, type: 3}
+      propertyPath: m_Constraints
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5897021648125987170, guid: cf808812b607cf343897da5b16321ab4, type: 3}
+      propertyPath: m_SpriteTilingProperty.oldSize.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5897021648125987170, guid: cf808812b607cf343897da5b16321ab4, type: 3}
+      propertyPath: m_SpriteTilingProperty.oldSize.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8856625936772873839, guid: cf808812b607cf343897da5b16321ab4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 8.41
+      value: 6.37
       objectReference: {fileID: 0}
     - target: {fileID: 8856625936772873839, guid: cf808812b607cf343897da5b16321ab4, type: 3}
       propertyPath: m_LocalPosition.y
@@ -436,8 +448,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2784247815669728694, guid: e85c6e02fda4a004b84664f435ad4d73, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: 8284008178146917663, guid: e85c6e02fda4a004b84664f435ad4d73, type: 3}
+  m_Color: {r: 0.42352942, g: 0.25882354, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -638,6 +650,10 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 53325142-44ef-4954-8aa1-6f683516e720
     m_ActionName: UI/TrackedDeviceOrientation
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: f01b5cc1-343f-4670-a29e-be9f97ae1dc1
+    m_ActionName: 'UI/Restart[/Keyboard/space]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -780,7 +796,7 @@ Transform:
   m_GameObject: {fileID: 2032227177}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.5, y: -2, z: 0}
+  m_LocalPosition: {x: -5.78, y: -2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
