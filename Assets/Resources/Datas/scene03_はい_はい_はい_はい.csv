@@ -1,0 +1,5 @@
+﻿Command,Arg1,Arg2,Arg3,Arg4,Arg5,Arg6,WaitType,Text,PageCtrl,Voice,WindowType,English
+# ========== Q4 はい → 罠発動 ==========,,,,,,,,,,,,
+Character,八百屋,八百屋,0.3,,,,,,,,,
+Text,八百屋,50,30,,,,,ヒ～ッヒッヒッヒ！引っかかったな兄ちゃん！最初から出直してきなあ！,,,,
+LoadScenario,scene03,,,,,,,,,,,
