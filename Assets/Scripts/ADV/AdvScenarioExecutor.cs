@@ -122,13 +122,11 @@ namespace ADV.System
         {
             try
             {
-                // GameFlow用のデータ書き換え
-                // var sceneData = SceneExchangeManager.Instance?.GetData<IAdvSceneData>();
-                // AdvSceneData sceneData = new AdvSceneData(SceneId.Title, GameFlowManager.Instance?.GetCurrentCSV());
-                AdvSceneData sceneData = new AdvSceneData(SceneId.Title, defaultScenarioData);
+                // GameFlow用のデータ取得
+                var sceneData = SceneExchangeManager.Instance?.GetData<IAdvSceneData>();
 
                 // シーン遷移データがない、またはCSVが設定されていない場合
-                if (sceneData.DataFile == null)
+                if (sceneData == null || sceneData.DataFile == null)
                 {
                     Debug.LogWarning("[AdvScenarioExecutor] CSV data not found in scene exchange data");
 

@@ -14,7 +14,10 @@ namespace ADV.Commands
 
         public override async UniTask ExecuteAsync(LineData<ScenarioFields> lineData, CancellableTask cancellable)
         {
-            // GameFlowManager.Instance.GoToNextScene();
+            if (GameFlowManager.Instance != null)
+            {
+                GameFlowManager.Instance.GoToNextScene();
+            }
             await UniTask.Yield();
         }
     }
