@@ -42,6 +42,7 @@ namespace ADV.Commands
 
             // シーン遷移系
             Register("LoadScene", deps => new LoadSceneCommand(deps.SceneTransitioner));
+            Register("LoadScenario", deps => new LoadScenarioCommand());
 
             Register("End", deps => new EndCommand());
 
