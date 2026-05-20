@@ -34,7 +34,7 @@ namespace ADV.Presentation
         {
             _view.ClearError();
             _view.SetActive(true);
-            await _textPresenter.DisplayTextAsync("", BuildBodyText(question, choices));
+            await _textPresenter.DisplayTextAsync("", BuildBodyText(question, choices), 50, 30, cancellable, false);
 
             string selected = await WaitForValidInputAsync(choices, cancellable);
 

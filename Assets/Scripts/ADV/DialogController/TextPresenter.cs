@@ -28,7 +28,8 @@ namespace ADV.Presentation
             string bodyText,
             int intervalMs = 50,
             int skipThresholdPercent = 30,
-            CancellableTask cancellable = null)
+            CancellableTask cancellable = null,
+            bool requireInputAtEnd = true)
         {
             // モデル初期化
             _model.CharacterName = characterName;
@@ -85,10 +86,13 @@ namespace ADV.Presentation
             }
 
             _model.IsComplete = true;
-            _view.SetSkipIconActive(true);
-
-            // 最終的な入力待機
-            await UniTask.WaitUntil(() => IsSkipInput());
+            
+            if (requireInputAtEnd)
+            {
+                _view.SetSkipIconActive(true);
+                // 最終的な入力待機
+                await UniTask.WaitUntil(() => IsSkipInput());
+            }
             _view.SetSkipIconActive(false);
         }
 
