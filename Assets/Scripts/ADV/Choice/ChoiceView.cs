@@ -25,7 +25,7 @@ namespace ADV.Presentation
         /// <summary>InputField をクリアしてフォーカスを当てる</summary>
         public void ActivateInput()
         {
-            // inputField.text = "";
+            inputField.text = "";
             inputField.ActivateInputField();
         }
 
