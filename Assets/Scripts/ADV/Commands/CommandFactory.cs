@@ -45,6 +45,10 @@ namespace ADV.Commands
 
             Register("End", deps => new EndCommand());
 
+
+            // 選択肢系
+            Register("Choice", deps => new ChoiceCommand(deps.ChoicePresenter));
+
             /*
             // 背景・演出系（今後実装）
             Register("Bg", deps => new BgCommand());

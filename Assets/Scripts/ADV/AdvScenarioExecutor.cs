@@ -21,6 +21,7 @@ namespace ADV.System
         [SerializeField] private TextDisplayView textViewPrefab;
         [SerializeField] private CharacterView characterViewPrefab;
         [SerializeField] private Transform characterContainer;
+        [SerializeField] private ChoiceView choiceViewPrefab;
 
         [Header("Debug Settings")]
         [SerializeField] private bool enableDebugLog = true;
@@ -29,11 +30,13 @@ namespace ADV.System
         // プレゼンター層
         private TextPresenter _textPresenter;
         private CharacterPresenter _characterPresenter;
+        private ChoicePresenter _choicePresenter;
 
         // 実行状態
         private CsvData<ScenarioFields> _currentScenario;
         private int _currentLineIndex;
         private CancellableTask _scenarioCancellable;
+        private string _currentScenarioName;
 
         // 非同期演出タスク管理
         private readonly List<UniTask> _activeVisualTasks = new();
@@ -47,6 +50,7 @@ namespace ADV.System
         public int TotalLines => _currentScenario?.RowCount ?? 0;
         public int CurrentLine => _currentLineIndex;
         public float Progress => TotalLines > 0 ? (float)_currentLineIndex / TotalLines : 0f;
+        public string CurrentScenarioName => _currentScenarioName;
 
         // シングルトンアクセス
         private static AdvScenarioExecutor _instance;
@@ -75,12 +79,14 @@ namespace ADV.System
             // Presenter層の生成
             _textPresenter = new TextPresenter(textView);
             _characterPresenter = new CharacterPresenter(characterContainer, characterViewPrefab);
+            _choicePresenter = new ChoicePresenter(choiceViewPrefab);
 
             // コマンドが必要とする依存関係をまとめる
             var dependencies = new CommandDependencies(
                 _textPresenter,
                 _characterPresenter,
-                SceneTransitioner.Instance
+                SceneTransitioner.Instance,
+                _choicePresenter
             );
 
             // ファクトリー生成
@@ -102,6 +108,7 @@ namespace ADV.System
             public SceneId TargetSceneId { get; set; }
         }
         /// <summary>
+        /// 
         /// シーン遷移データからシナリオを初期化して実行
         /// </summary>
         private async UniTaskVoid InitializeFromSceneData()
@@ -163,6 +170,7 @@ namespace ADV.System
                     ThrowOnValidationError = false
                 };
 
+                _currentScenarioName = csvFile.name;
                 _currentScenario = CSVLoader.LoadCSV<ScenarioFields>(csvFile, options);
                 _currentLineIndex = 0;
 
@@ -414,6 +422,7 @@ namespace ADV.System
             _scenarioCancellable?.Dispose();
             _textPresenter?.Dispose();
             _characterPresenter?.Dispose();
+            _choicePresenter?.Dispose();
 
             if (_instance == this)
             {
