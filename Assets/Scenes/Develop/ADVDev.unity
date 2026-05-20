@@ -854,7 +854,7 @@ MonoBehaviour:
   m_fontSizeBase: 50
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 18
+  m_fontSizeMin: 40
   m_fontSizeMax: 76
   m_fontStyle: 0
   m_HorizontalAlignment: 1
@@ -1352,7 +1352,7 @@ MonoBehaviour:
   choiceViewPrefab: {fileID: 1302983731}
   backgroundViewPrefab: {fileID: 274156376}
   enableDebugLog: 1
-  defaultScenarioData: {fileID: 4900000, guid: 6c5fef70e5f0dd0409e15998435e4c37, type: 3}
+  defaultScenarioData: {fileID: 4900000, guid: 94301f99d392e924b88312e2e8b15169, type: 3}
 --- !u!1 &2015185590
 GameObject:
   m_ObjectHideFlags: 0
