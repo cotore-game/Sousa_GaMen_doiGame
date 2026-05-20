@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,38 +14,57 @@ public class PlayerMover : MonoBehaviour
     private Vector2 inputDirection;
     private Rigidbody2D rigid;
     private bool bJump;
+    private bool isFacingRight = true;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         rigid = GetComponent<Rigidbody2D>();
         bJump = false;
+        isFacingRight = Mathf.Approximately(transform.eulerAngles.y, 0f);
     }
 
     // Update is called once per frame
     void Update()
     {
+        UpdateTurn();
         Move();
         Debug.Log(hp);
-        LookMoveDirec();
         HitFloor();
     }
 
     private void Move()
     {
-        if(bJump)return;
-        rigid.linearVelocity = new Vector2(inputDirection.x * MoveSpeed, rigid.linearVelocity.y);
+        float speedX = 0.0f;
+        if (isFacingRight && inputDirection.x > 0.0f)
+        {
+            speedX = inputDirection.x * MoveSpeed;
+        }
+        else if (!isFacingRight && inputDirection.x < 0.0f)
+        {
+            speedX = inputDirection.x * MoveSpeed;
+        }
+
+        rigid.linearVelocity = new Vector2(speedX, rigid.linearVelocity.y);
     }
 
-    private void LookMoveDirec()
+    private void UpdateTurn()
     {
-        if(inputDirection.x > 0.0f)
+        var keyboard = Keyboard.current;
+        if (keyboard == null) return;
+
+        if (keyboard.hKey.isPressed)
         {
-            transform.eulerAngles = Vector3.zero;
-        }
-        else if(inputDirection.x < 0.0f)
-        {
-            transform.eulerAngles = new Vector3(0.0f,180.0f,0.0f);
+            if (isFacingRight && keyboard.lKey.wasPressedThisFrame)
+            {
+                isFacingRight = false;
+                transform.eulerAngles = new Vector3(0.0f, 180.0f, 0.0f);
+            }
+            else if (!isFacingRight && keyboard.rKey.wasPressedThisFrame)
+            {
+                isFacingRight = true;
+                transform.eulerAngles = Vector3.zero;
+            }
         }
     }
 
@@ -114,7 +133,7 @@ public class PlayerMover : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        if (!context.performed || bJump) return;
+        if (!context.canceled || bJump) return;
 
         rigid.AddForce(Vector2.up * JumpSpeed, ForceMode2D.Impulse);
     }

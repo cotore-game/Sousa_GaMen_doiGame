@@ -1,4 +1,4 @@
-using Unity.VisualScripting;
+﻿using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -35,5 +35,5 @@ public class MainManager : MonoBehaviour
     {
         if (! bShowUI || !context.performed)return;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
+    }
 }
