@@ -14,10 +14,12 @@ namespace ADV.Presentation
     public class ChoicePresenter : IDisposable
     {
         private readonly ChoiceView _view;
+        private readonly TextPresenter _textPresenter;
 
-        public ChoicePresenter(ChoiceView view)
+        public ChoicePresenter(ChoiceView view, TextPresenter textPresenter)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
+            _textPresenter = textPresenter ?? throw new ArgumentNullException(nameof(textPresenter));
             _view.SetActive(false);
         }
 
@@ -31,8 +33,8 @@ namespace ADV.Presentation
             CancellableTask cancellable)
         {
             _view.ClearError();
-            _view.SetBodyText(BuildBodyText(question, choices));
             _view.SetActive(true);
+            await _textPresenter.DisplayTextAsync("", BuildBodyText(question, choices));
 
             string selected = await WaitForValidInputAsync(choices, cancellable);
 
@@ -53,7 +55,7 @@ namespace ADV.Presentation
             foreach (var choice in choices)
                 sb.AppendLine($"・{choice}");
 
-            return sb.ToString().TrimEnd();
+            return "<rotate=90>" + sb.ToString().TrimEnd() + "</rotate>";
         }
 
         /// <summary>

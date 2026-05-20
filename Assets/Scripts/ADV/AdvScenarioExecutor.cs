@@ -79,7 +79,7 @@ namespace ADV.System
             // Presenter層の生成
             _textPresenter = new TextPresenter(textView);
             _characterPresenter = new CharacterPresenter(characterContainer, characterViewPrefab);
-            _choicePresenter = new ChoicePresenter(choiceViewPrefab);
+            _choicePresenter = new ChoicePresenter(choiceViewPrefab, _textPresenter);
 
             // コマンドが必要とする依存関係をまとめる
             var dependencies = new CommandDependencies(

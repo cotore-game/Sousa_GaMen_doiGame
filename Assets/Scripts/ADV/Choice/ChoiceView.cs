@@ -9,32 +9,23 @@ namespace ADV.Presentation
     public class ChoiceView : MonoBehaviour
     {
         [Header("UI References")]
-        [SerializeField] private GameObject panel;
-        [SerializeField] private TMP_Text bodyText;
         [SerializeField] private TMP_InputField inputField;
         [SerializeField] private TMP_Text errorText;        // null 可
-
-        // ─── 公開プロパティ ───────────────────
 
         /// <summary>Presenter が onSubmit を購読するために公開</summary>
         public TMP_InputField InputField => inputField;
 
-        // ─── 操作メソッド ─────────────────────
+        // 操作
 
         public void SetActive(bool active)
         {
-            panel.SetActive(active);
-        }
-
-        public void SetBodyText(string text)
-        {
-            bodyText.text = text;
+            inputField.gameObject.SetActive(active);
         }
 
         /// <summary>InputField をクリアしてフォーカスを当てる</summary>
         public void ActivateInput()
         {
-            inputField.text = "";
+            // inputField.text = "";
             inputField.ActivateInputField();
         }
 

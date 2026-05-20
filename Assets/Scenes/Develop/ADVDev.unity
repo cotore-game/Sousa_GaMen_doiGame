@@ -137,7 +137,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &67446824
 RectTransform:
   m_ObjectHideFlags: 0
@@ -775,7 +775,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "<rotate=90>\u3053\u3053\u306B\u6587\u5B57\u304C\u8868\u793A\u3055\u308C\u307E\u3059\n2\u884C\u76EE\n3\u884C\u76EE\n4\n5</rotate>"
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c3a8eae2478fb754bacb2db3afa4f4e7, type: 2}
   m_sharedMaterial: {fileID: -3327007992492514685, guid: c3a8eae2478fb754bacb2db3afa4f4e7, type: 2}
@@ -802,7 +802,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 76
+  m_fontSize: 50
   m_fontSizeBase: 50
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1059,6 +1059,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1302983730}
+  - component: {fileID: 1302983731}
   m_Layer: 0
   m_Name: ChoiceView
   m_TagString: Untagged
@@ -1081,6 +1082,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1302983731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1302983729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ecbb0f62bceb5c49bc936418bfc72d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputField: {fileID: 67446825}
+  errorText: {fileID: 0}
 --- !u!1 &1421059084
 GameObject:
   m_ObjectHideFlags: 0
@@ -1286,7 +1301,7 @@ MonoBehaviour:
   textViewPrefab: {fileID: 2015185592}
   characterViewPrefab: {fileID: 4778368278199539874, guid: 07ecd331ac0a4d34ca2b540e7805d265, type: 3}
   characterContainer: {fileID: 2139662645}
-  choiceViewPrefab: {fileID: 0}
+  choiceViewPrefab: {fileID: 1302983731}
   enableDebugLog: 1
   defaultScenarioData: {fileID: 4900000, guid: ddd0f3092949b6d41a012d0c338dd50f, type: 3}
 --- !u!1 &2015185590
@@ -1531,7 +1546,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u540D\u524D\u304C\u3053\u3053\u306B\u8868\u793A"
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c3a8eae2478fb754bacb2db3afa4f4e7, type: 2}
   m_sharedMaterial: {fileID: -3327007992492514685, guid: c3a8eae2478fb754bacb2db3afa4f4e7, type: 2}
@@ -1558,7 +1573,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 65.6
+  m_fontSize: 36
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
