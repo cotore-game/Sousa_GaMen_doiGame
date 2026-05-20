@@ -11,7 +11,6 @@ public class PlayerMover : MonoBehaviour
     private float JumpSpeed;
     [SerializeField, Header("HitPoint")]
     private int hp;
-    private Vector2 inputDirection;
     private Rigidbody2D rigid;
     private bool bJump;
     private bool isFacingRight = true;
@@ -29,23 +28,39 @@ public class PlayerMover : MonoBehaviour
     {
         UpdateTurn();
         Move();
+        Jump();
         Debug.Log(hp);
         HitFloor();
     }
 
     private void Move()
     {
+        var keyboard = Keyboard.current;
+        if (keyboard == null) return;
+
         float speedX = 0.0f;
-        if (isFacingRight && inputDirection.x > 0.0f)
+        if (isFacingRight && keyboard.wKey.isPressed && keyboard.rKey.isPressed)
         {
-            speedX = inputDirection.x * MoveSpeed;
+            speedX = MoveSpeed;
         }
-        else if (!isFacingRight && inputDirection.x < 0.0f)
+        else if (!isFacingRight && keyboard.wKey.isPressed && keyboard.lKey.isPressed)
         {
-            speedX = inputDirection.x * MoveSpeed;
+            speedX = -MoveSpeed;
         }
 
         rigid.linearVelocity = new Vector2(speedX, rigid.linearVelocity.y);
+    }
+
+    private void Jump()
+    {
+        var keyboard = Keyboard.current;
+        if (keyboard == null) return;
+
+        if (!bJump && keyboard.jKey.wasReleasedThisFrame)
+        {
+            rigid.AddForce(Vector2.up * JumpSpeed, ForceMode2D.Impulse);
+            bJump = true;
+        }
     }
 
     private void UpdateTurn()
@@ -124,18 +139,6 @@ public class PlayerMover : MonoBehaviour
         {
             Destroy(gameObject);
         }
-    }
-
-    public void OnMove(InputAction.CallbackContext context)
-    {
-        inputDirection = context.ReadValue<Vector2>();
-    }
-
-    public void OnJump(InputAction.CallbackContext context)
-    {
-        if (!context.canceled || bJump) return;
-
-        rigid.AddForce(Vector2.up * JumpSpeed, ForceMode2D.Impulse);
     }
 
     public void Damege(int damage)
