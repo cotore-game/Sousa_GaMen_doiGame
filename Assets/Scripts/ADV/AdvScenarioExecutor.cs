@@ -21,6 +21,8 @@ namespace ADV.System
         [SerializeField] private TextDisplayView textViewPrefab;
         [SerializeField] private CharacterView characterViewPrefab;
         [SerializeField] private Transform characterContainer;
+        [SerializeField] private ChoiceView choiceViewPrefab;
+        [SerializeField] private BackgroundView backgroundViewPrefab;
 
         [Header("Debug Settings")]
         [SerializeField] private bool enableDebugLog = true;
@@ -29,11 +31,14 @@ namespace ADV.System
         // プレゼンター層
         private TextPresenter _textPresenter;
         private CharacterPresenter _characterPresenter;
+        private ChoicePresenter _choicePresenter;
+        private BackgroundPresenter _backgroundPresenter;
 
         // 実行状態
         private CsvData<ScenarioFields> _currentScenario;
         private int _currentLineIndex;
         private CancellableTask _scenarioCancellable;
+        private string _currentScenarioName;
 
         // 非同期演出タスク管理
         private readonly List<UniTask> _activeVisualTasks = new();
@@ -47,6 +52,7 @@ namespace ADV.System
         public int TotalLines => _currentScenario?.RowCount ?? 0;
         public int CurrentLine => _currentLineIndex;
         public float Progress => TotalLines > 0 ? (float)_currentLineIndex / TotalLines : 0f;
+        public string CurrentScenarioName => _currentScenarioName;
 
         // シングルトンアクセス
         private static AdvScenarioExecutor _instance;
@@ -71,16 +77,23 @@ namespace ADV.System
         {
             // View層のインスタンス化
             var textView = Instantiate(textViewPrefab, transform);
+            var backgroundView = backgroundViewPrefab != null ? Instantiate(backgroundViewPrefab, transform) : null;
 
             // Presenter層の生成
             _textPresenter = new TextPresenter(textView);
             _characterPresenter = new CharacterPresenter(characterContainer, characterViewPrefab);
+            _choicePresenter = new ChoicePresenter(choiceViewPrefab, _textPresenter);
+            
+            if (backgroundView != null)
+                _backgroundPresenter = new BackgroundPresenter(backgroundView);
 
             // コマンドが必要とする依存関係をまとめる
             var dependencies = new CommandDependencies(
                 _textPresenter,
                 _characterPresenter,
-                SceneTransitioner.Instance
+                SceneTransitioner.Instance,
+                _choicePresenter,
+                _backgroundPresenter
             );
 
             // ファクトリー生成
@@ -102,19 +115,18 @@ namespace ADV.System
             public SceneId TargetSceneId { get; set; }
         }
         /// <summary>
+        /// 
         /// シーン遷移データからシナリオを初期化して実行
         /// </summary>
         private async UniTaskVoid InitializeFromSceneData()
         {
             try
             {
-                // GameFlow用のデータ書き換え
-                // var sceneData = SceneExchangeManager.Instance?.GetData<IAdvSceneData>();
-                // AdvSceneData sceneData = new AdvSceneData(SceneId.Title, GameFlowManager.Instance?.GetCurrentCSV());
-                AdvSceneData sceneData = new AdvSceneData(SceneId.Title, defaultScenarioData);
+                // GameFlow用のデータ取得
+                var sceneData = SceneExchangeManager.Instance?.GetData<IAdvSceneData>();
 
                 // シーン遷移データがない、またはCSVが設定されていない場合
-                if (sceneData.DataFile == null)
+                if (sceneData == null || sceneData.DataFile == null)
                 {
                     Debug.LogWarning("[AdvScenarioExecutor] CSV data not found in scene exchange data");
 
@@ -163,6 +175,7 @@ namespace ADV.System
                     ThrowOnValidationError = false
                 };
 
+                _currentScenarioName = csvFile.name;
                 _currentScenario = CSVLoader.LoadCSV<ScenarioFields>(csvFile, options);
                 _currentLineIndex = 0;
 
@@ -414,6 +427,8 @@ namespace ADV.System
             _scenarioCancellable?.Dispose();
             _textPresenter?.Dispose();
             _characterPresenter?.Dispose();
+            _choicePresenter?.Dispose();
+            _backgroundPresenter?.Dispose();
 
             if (_instance == this)
             {

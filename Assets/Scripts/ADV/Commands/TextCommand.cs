@@ -44,6 +44,8 @@ namespace ADV.Commands
                 return;
             }
 
+            bodyText = $"<rotate=90>{bodyText}</rotate>";
+
             // TextPresenterに委譲
             await _textPresenter.DisplayTextAsync(
                 characterName,

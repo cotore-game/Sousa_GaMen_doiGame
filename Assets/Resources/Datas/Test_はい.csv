@@ -1,0 +1,4 @@
+﻿Command,Arg1,Arg2,Arg3,Arg4,Arg5,Arg6,WaitType,Text,PageCtrl,Voice,WindowType,English
+# ========== オープニング ==========,,,,,,,,,,,,
+Character,中田てるお,デフォルト,0.5,,,,,,,,,
+Text,,50,30,,,,,君ははいを選んだんだね,,,,
