@@ -1288,7 +1288,7 @@ MonoBehaviour:
   characterContainer: {fileID: 2139662645}
   choiceViewPrefab: {fileID: 0}
   enableDebugLog: 1
-  defaultScenarioData: {fileID: 4900000, guid: e52029b8602cde144b421f8cd26d976b, type: 3}
+  defaultScenarioData: {fileID: 4900000, guid: ddd0f3092949b6d41a012d0c338dd50f, type: 3}
 --- !u!1 &2015185590
 GameObject:
   m_ObjectHideFlags: 0
