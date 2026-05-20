@@ -34,8 +34,11 @@ public class GameFlowManager : SingletonMonoBehaviour<GameFlowManager>
             case 3:
                 LoadAdvScene("Datas/scene03");
                 break;
+            case 4:
+                LoadAdvScene("Datas/ending");
+                break;
             default:
-                // ADVシーン（scene03まで）終了後はフローをリセットしてTitleに戻る
+                // ADVシーン終了後はフローをリセットしてTitleに戻る
                 _currentFlowStep = 0;
                 if (SceneTransitioner.Instance != null)
                 {

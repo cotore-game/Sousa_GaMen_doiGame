@@ -1352,7 +1352,7 @@ MonoBehaviour:
   choiceViewPrefab: {fileID: 1302983731}
   backgroundViewPrefab: {fileID: 274156376}
   enableDebugLog: 1
-  defaultScenarioData: {fileID: 4900000, guid: 94301f99d392e924b88312e2e8b15169, type: 3}
+  defaultScenarioData: {fileID: 4900000, guid: c3452224dd5f9884fbc7ac69c9cc7e17, type: 3}
 --- !u!1 &2015185590
 GameObject:
   m_ObjectHideFlags: 0
