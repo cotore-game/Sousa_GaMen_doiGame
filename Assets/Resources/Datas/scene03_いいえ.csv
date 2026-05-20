@@ -1,0 +1,5 @@
+﻿Command,Arg1,Arg2,Arg3,Arg4,Arg5,Arg6,WaitType,Text,PageCtrl,Voice,WindowType,English
+# ========== Q1 いいえ → やり直し ==========,,,,,,,,,,,,
+Character,中田てるお,決意,0.3,,,,,,,,,
+Text,中田てるお,50,30,,,,,ここに来た目的を忘れちゃダメだ！,,,,
+LoadScenario,scene03,,,,,,,,,,,
