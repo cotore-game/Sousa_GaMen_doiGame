@@ -132,7 +132,7 @@ public class TitleSceneManager : MonoBehaviour
     {
         if (_confirmIndex == 0)
         {
-            // "る" → ゲーム開始
+            GameFlowManager.Instance.GoToNextScene();
         }
         else
         {

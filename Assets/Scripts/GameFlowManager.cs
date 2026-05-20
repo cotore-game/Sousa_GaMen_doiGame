@@ -14,17 +14,20 @@ public class GameFlowManager : SingletonMonoBehaviour<GameFlowManager>
 
     private void StartGameFlow()
     {
-        _currentFlowStep = 1;
-        LoadAdvScene("Datas/scene01");
+        _currentFlowStep = 0;
+        // 初期状態はTitleシーン。この後Titleシーン側で GoToNextScene() が呼ばれて scene01 へ進む想定
     }
 
     public void GoToNextScene()
     {
-        // Endコマンドなどで呼ばれた際の次のシーン・フロー制御
+        // Title画面での開始ボタンやEndコマンドなどで呼ばれた際の次のシーン・フロー制御
         _currentFlowStep++;
 
         switch (_currentFlowStep)
         {
+            case 1:
+                LoadAdvScene("Datas/scene01");
+                break;
             case 2:
                 LoadAdvScene("Datas/scene02");
                 break;
@@ -32,7 +35,8 @@ public class GameFlowManager : SingletonMonoBehaviour<GameFlowManager>
                 LoadAdvScene("Datas/scene03");
                 break;
             default:
-                // ADVシーン（scene03まで）終了後はTitleに戻る
+                // ADVシーン（scene03まで）終了後はフローをリセットしてTitleに戻る
+                _currentFlowStep = 0;
                 if (SceneTransitioner.Instance != null)
                 {
                     SceneTransitioner.Instance.TransitionTo(SceneId.Title);

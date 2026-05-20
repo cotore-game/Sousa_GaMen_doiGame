@@ -98,7 +98,9 @@ namespace ADV.Presentation
         private bool IsSkipInput()
         {
             if (_view.ShouldIgnoreInput()) return false;
-            return Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0);
+
+            bool isShift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            return isShift && Input.GetKeyDown(KeyCode.Period);
         }
 
         /// <summary>
