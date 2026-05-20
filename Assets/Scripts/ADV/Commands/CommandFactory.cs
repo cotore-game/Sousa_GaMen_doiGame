@@ -49,9 +49,12 @@ namespace ADV.Commands
             // 選択肢系
             Register("Choice", deps => new ChoiceCommand(deps.ChoicePresenter));
 
+            // 背景・演出系
+            Register("Bg", deps => new BgCommand(deps.BackgroundPresenter));
+
             /*
-            // 背景・演出系（今後実装）
-            Register("Bg", deps => new BgCommand());
+            // その他の背景・演出系（今後実装）
+            // Register("Bg", deps => new BgCommand());
             Register("Day", deps => new DayCommand());
             Register("DayOff", deps => new DayOffCommand());
 

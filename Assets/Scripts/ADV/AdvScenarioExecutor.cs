@@ -22,6 +22,7 @@ namespace ADV.System
         [SerializeField] private CharacterView characterViewPrefab;
         [SerializeField] private Transform characterContainer;
         [SerializeField] private ChoiceView choiceViewPrefab;
+        [SerializeField] private BackgroundView backgroundViewPrefab;
 
         [Header("Debug Settings")]
         [SerializeField] private bool enableDebugLog = true;
@@ -31,6 +32,7 @@ namespace ADV.System
         private TextPresenter _textPresenter;
         private CharacterPresenter _characterPresenter;
         private ChoicePresenter _choicePresenter;
+        private BackgroundPresenter _backgroundPresenter;
 
         // 実行状態
         private CsvData<ScenarioFields> _currentScenario;
@@ -75,18 +77,23 @@ namespace ADV.System
         {
             // View層のインスタンス化
             var textView = Instantiate(textViewPrefab, transform);
+            var backgroundView = backgroundViewPrefab != null ? Instantiate(backgroundViewPrefab, transform) : null;
 
             // Presenter層の生成
             _textPresenter = new TextPresenter(textView);
             _characterPresenter = new CharacterPresenter(characterContainer, characterViewPrefab);
             _choicePresenter = new ChoicePresenter(choiceViewPrefab, _textPresenter);
+            
+            if (backgroundView != null)
+                _backgroundPresenter = new BackgroundPresenter(backgroundView);
 
             // コマンドが必要とする依存関係をまとめる
             var dependencies = new CommandDependencies(
                 _textPresenter,
                 _characterPresenter,
                 SceneTransitioner.Instance,
-                _choicePresenter
+                _choicePresenter,
+                _backgroundPresenter
             );
 
             // ファクトリー生成
@@ -423,6 +430,7 @@ namespace ADV.System
             _textPresenter?.Dispose();
             _characterPresenter?.Dispose();
             _choicePresenter?.Dispose();
+            _backgroundPresenter?.Dispose();
 
             if (_instance == this)
             {

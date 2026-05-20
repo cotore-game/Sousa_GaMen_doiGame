@@ -14,17 +14,20 @@ namespace ADV.Commands
         public CharacterPresenter CharacterPresenter { get; }
         public SceneTransitioner SceneTransitioner { get; }
         public ChoicePresenter ChoicePresenter { get; }
+        public BackgroundPresenter BackgroundPresenter { get; }
 
         public CommandDependencies(
             TextPresenter textPresenter,
             CharacterPresenter characterPresenter,
             SceneTransitioner sceneTransitioner,
-            ChoicePresenter choicePresenter)
+            ChoicePresenter choicePresenter,
+            BackgroundPresenter backgroundPresenter)
         {
             TextPresenter = textPresenter ?? throw new ArgumentNullException(nameof(textPresenter));
             CharacterPresenter = characterPresenter ?? throw new ArgumentNullException(nameof(characterPresenter));
             SceneTransitioner = sceneTransitioner ?? throw new ArgumentNullException(nameof(sceneTransitioner));
             ChoicePresenter = choicePresenter ?? throw new ArgumentNullException(nameof(choicePresenter));
+            BackgroundPresenter = backgroundPresenter ?? throw new ArgumentNullException(nameof(backgroundPresenter));
         }
     }
 }

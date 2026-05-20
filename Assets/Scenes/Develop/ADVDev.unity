@@ -297,6 +297,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 67446823}
   m_CullTransparentMesh: 1
+--- !u!1 &274156374
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 274156375}
+  - component: {fileID: 274156376}
+  m_Layer: 0
+  m_Name: BGView
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &274156375
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 274156374}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &274156376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 274156374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f11309e691f923745967c2a782048ea2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bgImage: {fileID: 1237024132}
+  slothHomeSprite: {fileID: 21300000, guid: a33cb0d9aa3af28428589793cd3b4b78, type: 3}
+  greengrocerSprite: {fileID: 21300000, guid: 2ce2b0c789e7dcf42970b20cd7202a26, type: 3}
+  forestSprite: {fileID: 21300000, guid: d7a38dff235d9954eb8be73c72eb07f1, type: 3}
 --- !u!1 &315602244
 GameObject:
   m_ObjectHideFlags: 0
@@ -1076,7 +1124,7 @@ Transform:
   m_GameObject: {fileID: 1302983729}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 867.1035, y: 371.55533, z: -3.5081816}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1280,7 +1328,7 @@ Transform:
   m_GameObject: {fileID: 1709973968}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 923.16656, y: 657.61554, z: -4.7596917}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1302,8 +1350,9 @@ MonoBehaviour:
   characterViewPrefab: {fileID: 4778368278199539874, guid: 07ecd331ac0a4d34ca2b540e7805d265, type: 3}
   characterContainer: {fileID: 2139662645}
   choiceViewPrefab: {fileID: 1302983731}
+  backgroundViewPrefab: {fileID: 274156376}
   enableDebugLog: 1
-  defaultScenarioData: {fileID: 4900000, guid: ddd0f3092949b6d41a012d0c338dd50f, type: 3}
+  defaultScenarioData: {fileID: 4900000, guid: 6c5fef70e5f0dd0409e15998435e4c37, type: 3}
 --- !u!1 &2015185590
 GameObject:
   m_ObjectHideFlags: 0
@@ -1330,7 +1379,7 @@ Transform:
   m_GameObject: {fileID: 2015185590}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.2733936, y: -1.1330723, z: 0.058415525}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1686,3 +1735,4 @@ SceneRoots:
   - {fileID: 2015185591}
   - {fileID: 1709973969}
   - {fileID: 1302983730}
+  - {fileID: 274156375}
