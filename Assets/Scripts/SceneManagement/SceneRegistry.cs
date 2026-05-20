@@ -31,8 +31,8 @@ namespace SceneManagement
             // ========================================
             // ここにシーンのマッピングを定義
             // ========================================
-            Register(SceneId.Title, "TitleScene");
-            Register(SceneId.ADV, "ADVScene");
+            Register(SceneId.Title, "Title");
+            Register(SceneId.ADV, "ADV");
             Register(SceneId.Stage1, "Stage1Scene");
             Register(SceneId.Stage2, "Stage2Scene");
 
