@@ -7,6 +7,11 @@ on:
         description: 'Build version'
         required: true
         type: string
+      targetPlatform:
+        description: 'Target platform (StandaloneWindows64 or WebGL)'
+        required: false
+        type: string
+        default: 'StandaloneWindows64'
     secrets:
       UNITY_EMAIL:
         required: true
@@ -21,7 +26,7 @@ on:
 
 jobs:
   build-unity:
-    name: Build Unity for Windows
+    name: Build Unity for ${{ inputs.targetPlatform }}
     runs-on: ubuntu-latest
     outputs:
       artifact-name: ${{ steps.set-output.outputs.artifact-name }}
@@ -36,8 +41,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Library
-          key: Library-${{ hashFiles('Packages/manifest.json', 'Packages/packages-lock.json') }}
-          restore-keys: Library-
+          key: Library-${{ inputs.targetPlatform }}-${{ hashFiles('Packages/manifest.json', 'Packages/packages-lock.json') }}
+          restore-keys: Library-${{ inputs.targetPlatform }}-
 
       - name: Free Disk Space
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -53,18 +58,18 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
           buildName: GameLauncher
-          targetPlatform: StandaloneWindows64
+          targetPlatform: ${{ inputs.targetPlatform }}
           allowDirtyBuild: true
 
       - name: Set Output
         id: set-output
         run: |
-          ARTIFACT_NAME="unity-build-${{ inputs.version }}"
+          ARTIFACT_NAME="unity-build-${{ inputs.targetPlatform }}-${{ inputs.version }}"
           echo "artifact-name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
 
       - name: Upload Unity Build
         uses: actions/upload-artifact@v4
         with:
-          name: unity-build-${{ inputs.version }}
-          path: build/StandaloneWindows64/
+          name: unity-build-${{ inputs.targetPlatform }}-${{ inputs.version }}
+          path: build/${{ inputs.targetPlatform }}/
           retention-days: 1
