@@ -1,4 +1,4 @@
-name: Build and Release
+name: 🚀 Build & Release
 
 on:
   push:
@@ -11,51 +11,65 @@ on:
         required: true
         type: string
       build_windows:
-        description: 'Build for Windows?'
+        description: 'Build for Windows'
         required: true
         type: boolean
         default: true
       build_webgl:
-        description: 'Build for WebGL?'
+        description: 'Build for WebGL'
         required: true
         type: boolean
         default: false
       create_release:
-        description: 'Create GitHub Release? (Windows only)'
+        description: 'Create GitHub Release (Windowsビルド必須)'
         required: true
         type: boolean
         default: true
       deploy_webgl:
-        description: 'Deploy WebGL to GitHub Pages?'
+        description: 'Deploy WebGL to GitHub Pages (WebGLビルド必須)'
         required: true
         type: boolean
         default: false
       draft_release:
-        description: 'Create as draft release?'
+        description: 'Create as draft release'
         required: true
         type: boolean
         default: false
       prerelease:
-        description: 'Mark as pre-release?'
+        description: 'Mark as pre-release'
         required: true
         type: boolean
         default: false
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 【重要】reusable workflow に継承させるための最上位権限設定
+#   pages: write / id-token: write  →  deploy-webgl.yml の GitHub Pages 用
+#   contents: write                 →  release ジョブの GitHub Release 作成用
+# ─────────────────────────────────────────────────────────────────────────────
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
+  # ───────────────────────────────────────────────────
+  # 0. 初期化：バージョン解決とフラグ確定
+  # ───────────────────────────────────────────────────
   init:
     name: Initialize
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      run_windows: ${{ steps.check.outputs.run_windows }}
-      run_webgl: ${{ steps.check.outputs.run_webgl }}
-      should_release: ${{ steps.check.outputs.should_release }}
-      should_deploy: ${{ steps.check.outputs.should_deploy }}
-      is_draft: ${{ steps.check.outputs.is_draft }}
-      is_prerelease: ${{ steps.check.outputs.is_prerelease }}
+      version:        ${{ steps.resolve.outputs.version }}
+      run_windows:    ${{ steps.flags.outputs.run_windows }}
+      run_webgl:      ${{ steps.flags.outputs.run_webgl }}
+      should_release: ${{ steps.flags.outputs.should_release }}
+      should_deploy:  ${{ steps.flags.outputs.should_deploy }}
+      is_draft:       ${{ steps.flags.outputs.is_draft }}
+      is_prerelease:  ${{ steps.flags.outputs.is_prerelease }}
+
     steps:
-      - name: Determine Version
-        id: version
+      - name: Resolve Version
+        id: resolve
         run: |
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             VERSION="${GITHUB_REF#refs/tags/v}"
@@ -63,167 +77,218 @@ jobs:
             VERSION="${{ inputs.version }}"
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}"
 
-      - name: Check release settings
-        id: check
+      - name: Resolve Flags
+        id: flags
         run: |
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            # タグプッシュ時はすべて自動でTrue
-            echo "run_windows=true" >> $GITHUB_OUTPUT
-            echo "run_webgl=true" >> $GITHUB_OUTPUT
-            echo "should_release=true" >> $GITHUB_OUTPUT
-            echo "should_deploy=true" >> $GITHUB_OUTPUT
-            echo "is_draft=false" >> $GITHUB_OUTPUT
-            
+            # タグプッシュ時はすべて自動で有効
+            echo "run_windows=true"     >> $GITHUB_OUTPUT
+            echo "run_webgl=true"       >> $GITHUB_OUTPUT
+            echo "should_release=true"  >> $GITHUB_OUTPUT
+            echo "should_deploy=true"   >> $GITHUB_OUTPUT
+            echo "is_draft=false"       >> $GITHUB_OUTPUT
             if [[ "${{ github.ref }}" =~ (beta|alpha|rc) ]]; then
-              echo "is_prerelease=true" >> $GITHUB_OUTPUT
+              echo "is_prerelease=true"  >> $GITHUB_OUTPUT
             else
               echo "is_prerelease=false" >> $GITHUB_OUTPUT
             fi
           else
             # 手動実行時はチェックボックスの入力を反映
-            echo "run_windows=${{ inputs.build_windows }}" >> $GITHUB_OUTPUT
-            echo "run_webgl=${{ inputs.build_webgl }}" >> $GITHUB_OUTPUT
-            echo "should_release=${{ inputs.create_release }}" >> $GITHUB_OUTPUT
-            echo "should_deploy=${{ inputs.deploy_webgl }}" >> $GITHUB_OUTPUT
-            echo "is_draft=${{ inputs.draft_release }}" >> $GITHUB_OUTPUT
-            echo "is_prerelease=${{ inputs.prerelease }}" >> $GITHUB_OUTPUT
+            echo "run_windows=${{ inputs.build_windows }}"      >> $GITHUB_OUTPUT
+            echo "run_webgl=${{ inputs.build_webgl }}"          >> $GITHUB_OUTPUT
+            echo "should_release=${{ inputs.create_release }}"  >> $GITHUB_OUTPUT
+            echo "should_deploy=${{ inputs.deploy_webgl }}"     >> $GITHUB_OUTPUT
+            echo "is_draft=${{ inputs.draft_release }}"         >> $GITHUB_OUTPUT
+            echo "is_prerelease=${{ inputs.prerelease }}"       >> $GITHUB_OUTPUT
           fi
 
-  # Unityのビルド実行 (Windows)
-  build-unity-windows:
-    name: Build Unity (Windows)
+  # ───────────────────────────────────────────────────
+  # 1a. Unity ビルド（Windows）
+  # ───────────────────────────────────────────────────
+  build-windows:
+    name: Build (Windows)
     needs: init
     if: needs.init.outputs.run_windows == 'true'
     uses: ./.github/workflows/build-unity.yml
     with:
-      version: ${{ needs.init.outputs.version }}
+      version:        ${{ needs.init.outputs.version }}
       targetPlatform: 'StandaloneWindows64'
     secrets:
-      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_LICENSE:  ${{ secrets.UNITY_LICENSE }}
 
-  # Unityのビルド実行 (WebGL)
-  build-unity-webgl:
-    name: Build Unity (WebGL)
+  # ───────────────────────────────────────────────────
+  # 1b. Unity ビルド（WebGL）
+  # ───────────────────────────────────────────────────
+  build-webgl:
+    name: Build (WebGL)
     needs: init
     if: needs.init.outputs.run_webgl == 'true'
     uses: ./.github/workflows/build-unity.yml
     with:
-      version: ${{ needs.init.outputs.version }}
+      version:        ${{ needs.init.outputs.version }}
       targetPlatform: 'WebGL'
     secrets:
-      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_LICENSE:  ${{ secrets.UNITY_LICENSE }}
 
-  # インストーラーの作成 (Windows用)
+  # ───────────────────────────────────────────────────
+  # 2. Inno Setup インストーラー作成（Windows ビルド後）
+  # ───────────────────────────────────────────────────
   create-installer:
     name: Create Installer
-    needs: [init, build-unity-windows]
+    needs: [init, build-windows]
     if: needs.init.outputs.run_windows == 'true'
     uses: ./.github/workflows/create-installer.yml
     with:
-      version: ${{ needs.init.outputs.version }}
-      unity-artifact-name: ${{ needs.build-unity-windows.outputs.artifact-name }}
+      version:             ${{ needs.init.outputs.version }}
+      unity-artifact-name: ${{ needs.build-windows.outputs.artifact-name }}
 
-  # GitHubリリースの作成 (Windows用)
+  # ───────────────────────────────────────────────────
+  # 3. GitHub Release 作成（インストーラー + ZIP の2種類配布）
+  # ───────────────────────────────────────────────────
   release:
     name: Create GitHub Release
-    needs: [init, create-installer]
-    if: needs.init.outputs.should_release == 'true' && needs.init.outputs.run_windows == 'true'
+    needs: [init, build-windows, create-installer]
+    if: |
+      needs.init.outputs.should_release == 'true' &&
+      needs.init.outputs.run_windows == 'true' &&
+      needs.create-installer.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Download Installer
         uses: actions/download-artifact@v4
         with:
           name: installer-v${{ needs.init.outputs.version }}
+          path: release-assets/
 
-      - name: Determine tag name
+      - name: Download Windows Build (ZIP用)
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-windows.outputs.artifact-name }}
+          path: build-windows/
+
+      - name: Create ZIP Archive
+        run: |
+          cd build-windows
+          zip -r "../release-assets/GameLauncher-v${{ needs.init.outputs.version }}-Windows.zip" .
+          echo "ZIP作成完了"
+          ls -lh ../release-assets/
+
+      - name: Resolve Tag Name
         id: tag
         run: |
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            TAG="${GITHUB_REF#refs/tags/}"
           else
-            TAG_NAME="v${{ needs.init.outputs.version }}"
+            TAG="v${{ needs.init.outputs.version }}"
           fi
-          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "tag_name=${TAG}" >> $GITHUB_OUTPUT
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.tag_name }}
-          name: Game Launcher ${{ steps.tag.outputs.tag_name }}
+          tag_name:    ${{ steps.tag.outputs.tag_name }}
+          name:        "Game Launcher ${{ steps.tag.outputs.tag_name }}"
+          draft:       ${{ needs.init.outputs.is_draft == 'true' }}
+          prerelease:  ${{ needs.init.outputs.is_prerelease == 'true' }}
+          generate_release_notes: true
           body: |
             ## Game Launcher ${{ steps.tag.outputs.tag_name }}
-            
-            ### 📥 インストール方法
-            1. 下の Assets から `GameLauncher-Setup-v${{ needs.init.outputs.version }}.exe` をダウンロード
-            2. ダウンロードしたファイルを実行してインストール
-            3. スタートメニューから「Game Launcher」を起動
-            
-            ### 📝 ビルド情報
-            - **バージョン**: ${{ needs.init.outputs.version }}
-            - **ビルド番号**: #${{ github.run_number }}
-            
-            ### 🔧 システム要件
-            - Windows 10/11 (64-bit)
-          files: GameLauncher-Setup-v${{ needs.init.outputs.version }}.exe
-          draft: ${{ needs.init.outputs.is_draft == 'true' }}
-          prerelease: ${{ needs.init.outputs.is_prerelease == 'true' }}
-          generate_release_notes: true
 
-  # WebGLのデプロイ実行
+            ### インストール方法
+
+            #### インストーラー版（推奨）
+            1. `GameLauncher-Setup-v${{ needs.init.outputs.version }}.exe` をダウンロード
+            2. ファイルを実行してウィザードに従ってインストール
+            3. スタートメニューの「Game Launcher」から起動
+
+            #### ポータブル版（ZIP）
+            1. `GameLauncher-v${{ needs.init.outputs.version }}-Windows.zip` をダウンロード
+            2. 任意の場所に展開
+            3. `GameLauncher.exe` を起動
+
+            ### ビルド情報
+            | 項目 | 値 |
+            |------|-----|
+            | バージョン | `${{ needs.init.outputs.version }}` |
+            | ビルド番号 | `#${{ github.run_number }}` |
+            | コミット | [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |
+
+            ### 🔧 システム要件
+            - Windows 10 / 11 (64-bit)
+          files: |
+            release-assets/GameLauncher-Setup-v${{ needs.init.outputs.version }}.exe
+            release-assets/GameLauncher-v${{ needs.init.outputs.version }}-Windows.zip
+
+  # ───────────────────────────────────────────────────
+  # 4. WebGL → GitHub Pages デプロイ
+  # ───────────────────────────────────────────────────
   deploy-webgl:
-    name: Deploy WebGL
-    needs: [init, build-unity-webgl]
-    if: needs.init.outputs.should_deploy == 'true' && needs.init.outputs.run_webgl == 'true'
+    name: Deploy to GitHub Pages
+    needs: [init, build-webgl]
+    if: |
+      needs.init.outputs.should_deploy == 'true' &&
+      needs.init.outputs.run_webgl == 'true' &&
+      needs.build-webgl.result == 'success'
     uses: ./.github/workflows/deploy-webgl.yml
     with:
-      unity-artifact-name: ${{ needs.build-unity-webgl.outputs.artifact-name }}
+      version:             ${{ needs.init.outputs.version }}
+      unity-artifact-name: ${{ needs.build-webgl.outputs.artifact-name }}
 
-  # 成功時の通知
+  # ───────────────────────────────────────────────────
+  # 5. Discord 通知（成功・失敗・キャンセル、常に実行）
+  # ───────────────────────────────────────────────────
   notify-success:
     name: Notify Success
-    needs: [init, build-unity-windows, build-unity-webgl, create-installer, release, deploy-webgl]
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    needs: [init, build-windows, build-webgl, create-installer, release, deploy-webgl]
+    if: |
+      always() &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/notify-discord.yml
     with:
-      status: "success"
-      version: ${{ needs.init.outputs.version }}
+      status:        "success"
+      version:       ${{ needs.init.outputs.version }}
       workflow-name: "Game Launcher リリース"
-      job-name: "すべての処理が正常に完了しました"
+      job-name:      "すべての処理が正常に完了しました"
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
-  # 失敗時の通知
   notify-failure:
     name: Notify Failure
-    needs: [init, build-unity-windows, build-unity-webgl, create-installer, release, deploy-webgl]
-    if: always() && contains(needs.*.result, 'failure')
+    needs: [init, build-windows, build-webgl, create-installer, release, deploy-webgl]
+    if: |
+      always() &&
+      contains(needs.*.result, 'failure')
     uses: ./.github/workflows/notify-discord.yml
     with:
-      status: "failure"
-      version: ${{ needs.init.outputs.version }}
+      status:        "failure"
+      version:       ${{ needs.init.outputs.version }}
       workflow-name: "Game Launcher ビルド"
-      job-name: "ビルド・デプロイエラー"
+      job-name:      "エラーが発生しました"
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
-  # キャンセル時の通知
   notify-cancelled:
     name: Notify Cancelled
-    needs: [init, build-unity-windows, build-unity-webgl, create-installer, release, deploy-webgl]
-    if: always() && contains(needs.*.result, 'cancelled') && !contains(needs.*.result, 'failure')
+    needs: [init, build-windows, build-webgl, create-installer, release, deploy-webgl]
+    if: |
+      always() &&
+      contains(needs.*.result, 'cancelled') &&
+      !contains(needs.*.result, 'failure')
     uses: ./.github/workflows/notify-discord.yml
     with:
-      status: "cancelled"
-      version: ${{ needs.init.outputs.version }}
+      status:        "cancelled"
+      version:       ${{ needs.init.outputs.version }}
       workflow-name: "Game Launcher ビルド"
-      job-name: "ビルドキャンセル"
+      job-name:      "ビルドがキャンセルされました"
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-      

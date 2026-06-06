@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       status:
-        description: 'Build status (success/failure/cancelled)'
+        description: 'Build status (success / failure / cancelled)'
         required: true
         type: string
       version:
@@ -22,52 +22,65 @@ on:
         default: 'Build'
     secrets:
       DISCORD_WEBHOOK_URL:
-        required: true
+        # オプション：未設定の場合は通知をスキップする（エラーにしない）
+        required: false
 
 jobs:
   notify:
     name: Send Discord Notification
     runs-on: ubuntu-latest
-    
-    steps:
-      - name: Prepare notification data
-        id: prepare
-        run: |
-          STATUS="${{ inputs.status }}"
-          
-          # ステータスに応じた色とアイコン
-          if [ "$STATUS" == "success" ]; then
-            COLOR="3066993"  # 緑
-            EMOJI="✅"
-            TITLE="ビルド成功"
-          elif [ "$STATUS" == "failure" ]; then
-            COLOR="15158332"  # 赤
-            EMOJI="❌"
-            TITLE="ビルド失敗"
-          else
-            COLOR="15844367"  # オレンジ
-            EMOJI="⚠️"
-            TITLE="ビルドキャンセル"
-          fi
-          
-          echo "color=${COLOR}" >> $GITHUB_OUTPUT
-          echo "emoji=${EMOJI}" >> $GITHUB_OUTPUT
-          echo "title=${TITLE}" >> $GITHUB_OUTPUT
 
-      - name: Send Discord notification
+    # secrets は if 条件で直接参照できないため env 経由で空チェックを行う
+    env:
+      WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+    steps:
+      - name: Check Webhook Availability
+        id: check
+        run: |
+          if [ -n "$WEBHOOK_URL" ]; then
+            echo "available=true" >> $GITHUB_OUTPUT
+          else
+            echo "available=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  DISCORD_WEBHOOK_URL が未設定のため通知をスキップします"
+          fi
+
+      - name: Prepare Notification Data
+        id: prepare
+        if: steps.check.outputs.available == 'true'
+        run: |
+          case "${{ inputs.status }}" in
+            success)
+              echo "color=3066993"   >> $GITHUB_OUTPUT
+              echo "emoji=✅"        >> $GITHUB_OUTPUT
+              echo "title=ビルド成功" >> $GITHUB_OUTPUT
+              ;;
+            failure)
+              echo "color=15158332"  >> $GITHUB_OUTPUT
+              echo "emoji=❌"        >> $GITHUB_OUTPUT
+              echo "title=ビルド失敗" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "color=15844367"         >> $GITHUB_OUTPUT
+              echo "emoji=⚠️"               >> $GITHUB_OUTPUT
+              echo "title=ビルドキャンセル"   >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Send Discord Notification
+        if: steps.check.outputs.available == 'true'
         uses: tsickert/discord-webhook@v6.0.0
         with:
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          username: "GitHub Actions"
-          avatar-url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-          embed-title: "${{ steps.prepare.outputs.emoji }} ${{ steps.prepare.outputs.title }}: ${{ inputs.workflow-name }}"
+          webhook-url:       ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username:          "GitHub Actions"
+          avatar-url:        "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+          embed-title:       "${{ steps.prepare.outputs.emoji }} ${{ steps.prepare.outputs.title }}: ${{ inputs.workflow-name }}"
+          embed-color:       ${{ steps.prepare.outputs.color }}
+          embed-url:         "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: |
             **バージョン:** `${{ inputs.version }}`
             **ステータス:** ${{ inputs.status }}
             **ジョブ:** ${{ inputs.job-name }}
-          embed-color: ${{ steps.prepare.outputs.color }}
-          embed-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          embed-timestamp: ${{ github.event.head_commit.timestamp }}
           embed-fields: |
             [
               {
@@ -86,8 +99,8 @@ jobs:
                 "inline": true
               },
               {
-                "name": "🔗 ワークフロー",
-                "value": "[詳細を見る](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+                "name": "🔗 詳細",
+                "value": "[ワークフローを確認](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})",
                 "inline": false
               }
             ]

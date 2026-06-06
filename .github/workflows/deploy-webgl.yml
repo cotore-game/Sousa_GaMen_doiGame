@@ -4,26 +4,32 @@ on:
   workflow_call:
     inputs:
       version:
-        description: 'Build version'
-        required: true
+        description: 'ビルドバージョン (ログ用、省略可)'
+        required: false
         type: string
+        default: ''
       unity-artifact-name:
-        description: 'Unity build artifact name to download'
+        description: 'ダウンロードするUnityビルドアーティファクト名'
         required: true
         type: string
 
 jobs:
   deploy-webgl:
-    name: Deploy WebGL
+    name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
-    # GitHub Pagesへのデプロイに必要な権限
+
+    # ─────────────────────────────────────────────────────────
+    # 【修正ポイント】
+    # この権限は呼び出し元 (release.yml) の最上位 permissions で
+    # pages: write / id-token: write が付与されている必要がある。
+    # ─────────────────────────────────────────────────────────
     permissions:
-      pages: write
+      pages:    write
       id-token: write
 
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url:  ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Download Unity Build
@@ -35,7 +41,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload Artifact
+      - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/WebGL
