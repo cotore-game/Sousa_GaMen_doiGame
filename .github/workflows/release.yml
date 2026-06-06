@@ -41,12 +41,6 @@ on:
         type: boolean
         default: false
 
-# 全体の権限設定（PagesデプロイとRelease作成に必要な権限を定義）
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
 jobs:
   init:
     name: Initialize
@@ -87,7 +81,7 @@ jobs:
               echo "is_prerelease=false" >> $GITHUB_OUTPUT
             fi
           else
-            # 手動実行時は入力を反映
+            # 手動実行時はチェックボックスの入力を反映
             echo "run_windows=${{ inputs.build_windows }}" >> $GITHUB_OUTPUT
             echo "run_webgl=${{ inputs.build_webgl }}" >> $GITHUB_OUTPUT
             echo "should_release=${{ inputs.create_release }}" >> $GITHUB_OUTPUT
@@ -140,6 +134,8 @@ jobs:
     needs: [init, create-installer]
     if: needs.init.outputs.should_release == 'true' && needs.init.outputs.run_windows == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download Installer
         uses: actions/download-artifact@v4
@@ -187,19 +183,18 @@ jobs:
     if: needs.init.outputs.should_deploy == 'true' && needs.init.outputs.run_webgl == 'true'
     uses: ./.github/workflows/deploy-webgl.yml
     with:
-      version: ${{ needs.init.outputs.version }}
       unity-artifact-name: ${{ needs.build-unity-webgl.outputs.artifact-name }}
 
   # 成功時の通知
   notify-success:
     name: Notify Success
     needs: [init, build-unity-windows, build-unity-webgl, create-installer, release, deploy-webgl]
-    if: success()
+    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/notify-discord.yml
     with:
       status: "success"
       version: ${{ needs.init.outputs.version }}
-      workflow-name: "Game Launcher ビルド・リリース"
+      workflow-name: "Game Launcher リリース"
       job-name: "すべての処理が正常に完了しました"
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -208,13 +203,13 @@ jobs:
   notify-failure:
     name: Notify Failure
     needs: [init, build-unity-windows, build-unity-webgl, create-installer, release, deploy-webgl]
-    if: failure()
+    if: always() && contains(needs.*.result, 'failure')
     uses: ./.github/workflows/notify-discord.yml
     with:
       status: "failure"
       version: ${{ needs.init.outputs.version }}
       workflow-name: "Game Launcher ビルド"
-      job-name: "ビルドエラーが発生しました"
+      job-name: "ビルド・デプロイエラー"
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
@@ -222,12 +217,13 @@ jobs:
   notify-cancelled:
     name: Notify Cancelled
     needs: [init, build-unity-windows, build-unity-webgl, create-installer, release, deploy-webgl]
-    if: cancelled()
+    if: always() && contains(needs.*.result, 'cancelled') && !contains(needs.*.result, 'failure')
     uses: ./.github/workflows/notify-discord.yml
     with:
       status: "cancelled"
       version: ${{ needs.init.outputs.version }}
       workflow-name: "Game Launcher ビルド"
-      job-name: "ビルドがキャンセルされました"
+      job-name: "ビルドキャンセル"
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      
