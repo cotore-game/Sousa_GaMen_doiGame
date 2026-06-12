@@ -1,20 +1,15 @@
 <#
 .SYNOPSIS
     Unity ビルド後の開発専用フォルダを削除します。
-
-.PARAMETER BuildPath
-    クリーンアップ対象のビルドディレクトリパス。
-
-.EXAMPLE
-    .github/scripts/cleanup-build.ps1 -BuildPath "build/StandaloneWindows64"
 #>
+
 param(
     [Parameter(Mandatory)]
     [string]$BuildPath
 )
 
 if (-not (Test-Path $BuildPath)) {
-    Write-Error "❌ BuildPath が見つかりません: $BuildPath"
+    Write-Error "BuildPath not found: $BuildPath"
     exit 1
 }
 
@@ -29,14 +24,14 @@ foreach ($pattern in $patterns) {
     Get-ChildItem -Path $BuildPath -Recurse -Directory |
         Where-Object { $_.Name -like $pattern } |
         ForEach-Object {
-            Write-Host "🗑️  Removing: $($_.FullName)"
+            Write-Host "Removing: $($_.FullName)"
             Remove-Item -Path $_.FullName -Recurse -Force
             $removed++
         }
 }
 
 if ($removed -eq 0) {
-    Write-Host "ℹ️  削除対象のフォルダが見つかりませんでした"
+    Write-Host "No target folders found for cleanup."
 } else {
-    Write-Host "✅ $removed 個のフォルダを削除しました"
+    Write-Host "Cleanup complete. Removed $removed folders."
 }

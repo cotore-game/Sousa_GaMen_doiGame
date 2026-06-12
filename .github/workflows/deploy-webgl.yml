@@ -4,17 +4,17 @@ on:
   workflow_call:
     inputs:
       version:
-        description: 'ビルドバージョン (ログ用、省略可)'
+        description: 'Build version (Optional, for logging)'
         required: false
         type: string
         default: ''
       unity-artifact-name:
-        description: 'ダウンロードするUnityビルドアーティファクト名'
+        description: 'Unity build artifact name to download'
         required: true
         type: string
     outputs:
       page_url:
-        description: 'デプロイされた GitHub Pages の URL'
+        description: 'Deployed GitHub Pages URL'
         value: ${{ jobs.deploy-webgl.outputs.page_url }}
 
 jobs:
@@ -23,12 +23,12 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      pages:    write
+      pages: write
       id-token: write
 
     environment:
       name: github-pages
-      url:  ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}
 
     outputs:
       page_url: ${{ steps.deployment.outputs.page_url }}
@@ -45,26 +45,26 @@ jobs:
 
       - name: Locate WebGL Build Root
         id: locate
-        run: |
+        run: |\
           INDEX=$(find build/WebGL -name "index.html" | head -n 1)
           if [ -z "$INDEX" ]; then
-            echo "index.html が見つかりません"
+            echo "Error: index.html not found"
             find build/WebGL -type f | head -30
             exit 1
           fi
           BUILD_ROOT=$(dirname "$INDEX")
           echo "build_root=${BUILD_ROOT}" >> $GITHUB_OUTPUT
-          echo "WebGL ビルドルート: ${BUILD_ROOT}"
+          echo "WebGL build root: ${BUILD_ROOT}"
 
       - name: Move WebGL Root to pages-root
         run: mv "${{ steps.locate.outputs.build_root }}" pages-root
 
       - name: Inject OGP Meta Tags
-        run: |
+        run: |\
           python3 .github/scripts/inject-ogp.py \
-            --meta    ".github/index/meta.yml" \
-            --index   "pages-root/index.html" \
-            --assets  ".github/index" \
+            --meta ".github/index/meta.yml" \
+            --index "pages-root/index.html" \
+            --assets ".github/index" \
             --out-dir "pages-root" \
             --repo-url "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
 

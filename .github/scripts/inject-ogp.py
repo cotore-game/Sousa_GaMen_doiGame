@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """
 OGP / SNS プレビュー meta タグを Unity WebGL の index.html に注入するスクリプト。
-
 .github/index/meta.yml が存在しない、または enabled: false の場合は何もしない。
-LFS ポインタのままのファイルは自動検出してスキップし、ビルドを失敗させない。
 """
 
 import argparse
@@ -16,8 +14,7 @@ import pathlib
 
 def parse_meta_yml(path: str) -> dict:
     """
-    YAML パーサー不要の簡易パーサー。
-    対応形式: key: value (クォートあり/なし)
+    簡易パーサー
     """
     result = {}
     with open(path, encoding="utf-8") as f:
@@ -80,23 +77,23 @@ def build_meta_block(cfg: dict, repo_url: str, icon_copied: bool) -> str:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--meta",     required=True, help=".github/index/meta.yml のパス")
-    parser.add_argument("--index",    required=True, help="対象の index.html のパス")
-    parser.add_argument("--assets",   required=True, help="アイコン画像の元ディレクトリ")
-    parser.add_argument("--out-dir",  required=True, help="アイコン画像のコピー先ディレクトリ")
+    parser.add_argument("--meta", required=True, help=".github/index/meta.yml のパス")
+    parser.add_argument("--index", required=True, help="対象の index.html のパス")
+    parser.add_argument("--assets", required=True, help="アイコン画像の元ディレクトリ")
+    parser.add_argument("--out-dir", required=True, help="アイコン画像のコピー先ディレクトリ")
     parser.add_argument("--repo-url", required=True, help="GitHub Pages のベース URL")
     args = parser.parse_args()
 
     # meta.yml が存在しない場合はスキップ
     if not os.path.exists(args.meta):
-        print(f"{args.meta} が存在しないため OGP 注入をスキップします")
+        print(f"Skipping OGP injection: {args.meta} not found.")
         return 0
 
     cfg = parse_meta_yml(args.meta)
 
     # enabled: false ならスキップ
     if cfg.get("enabled", "true").lower() == "false":
-        print("enabled: false のため OGP 注入をスキップします")
+        print("Skipping OGP injection: enabled is set to false.")
         return 0
 
     # アイコン画像の処理
@@ -108,14 +105,14 @@ def main():
         src = os.path.join(args.assets, icon_file)
         dst = os.path.join(args.out_dir, icon_file)
         if not os.path.exists(src):
-            print(f"{src} が見つかりません（アイコンをスキップ）")
+            print(f"Warning: {src} not found. Skipping icon.")
         elif is_lfs_pointer(src):
-            print(f"{src} が LFS ポインタのままです（checkout に lfs: true が必要）")
-            print("   アイコンなしで OGP タグを注入します")
+            print(f"Warning: {src} is an LFS pointer. 'lfs: true' is required in checkout step.")
+            print("Injecting OGP tags without icon.")
         else:
             shutil.copy2(src, dst)
             size = os.path.getsize(src)
-            print(f"アイコン画像をコピー: {icon_file} ({size:,} bytes)")
+            print(f"Copied icon image: {icon_file} ({size:,} bytes)")
             icon_copied = True
 
     # meta タグブロックを組み立て
@@ -124,12 +121,12 @@ def main():
     # index.html に注入
     index_path = pathlib.Path(args.index)
     if not index_path.exists():
-        print(f"{args.index} が見つかりません", file=sys.stderr)
+        print(f"Error: {args.index} not found.", file=sys.stderr)
         return 1
 
     html = index_path.read_text(encoding="utf-8")
     if not re.search(r"(?i)</head>", html):
-        print("index.html に </head> タグが見つかりません", file=sys.stderr)
+        print("Error: </head> tag not found in index.html", file=sys.stderr)
         return 1
 
     patched = re.sub(r"(?i)(</head>)", block + r"\1", html, count=1)
@@ -141,9 +138,9 @@ def main():
         index_path.write_text(patched, encoding="utf-8")
         backup.unlink()
         tag_count = block.count("<meta") + block.count("<link")
-        print(f"OGP meta タグを {tag_count} 件注入しました")
+        print(f"Successfully injected {tag_count} OGP meta tags.")
     except Exception as e:
-        print(f"書き込み失敗: {e} → バックアップから復元します", file=sys.stderr)
+        print(f"Error: Failed to write file: {e}. Restoring from backup.", file=sys.stderr)
         shutil.copy2(backup, index_path)
         backup.unlink()
         return 1

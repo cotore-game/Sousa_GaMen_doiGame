@@ -21,22 +21,22 @@ on:
         type: string
         default: 'Build'
       installer-artifact-name:
-        description: 'インストーラーアーティファクト名 (省略可)'
+        description: 'Installer Artifact Name (Optional)'
         required: false
         type: string
         default: ''
       windows-artifact-name:
-        description: 'Windows ビルドアーティファクト名 (省略可)'
+        description: 'Windows Build Artifact Name (Optional)'
         required: false
         type: string
         default: ''
       webgl-artifact-name:
-        description: 'WebGL ビルドアーティファクト名 (省略可)'
+        description: 'WebGL Build Artifact Name (Optional)'
         required: false
         type: string
         default: ''
       pages-url:
-        description: 'デプロイされた GitHub Pages の URL (省略可)'
+        description: 'Deployed GitHub Pages URL (Optional)'
         required: false
         type: string
         default: ''
@@ -61,7 +61,7 @@ jobs:
             echo "available=true" >> $GITHUB_OUTPUT
           else
             echo "available=false" >> $GITHUB_OUTPUT
-            echo "DISCORD_WEBHOOK_URL が未設定のため通知をスキップします"
+            echo "DISCORD_WEBHOOK_URL is not set. Skipping notification."
           fi
 
       - name: Resolve Artifact URLs
@@ -146,13 +146,13 @@ jobs:
               echo "[installer (exe)](${INSTALLER_URL})"
             fi
             if [ -n "$WINDOWS_URL" ]; then
-              echo "[windows build](${WINDOWS_URL})"
+              echo "[windows Build](${WINDOWS_URL})"
             fi
             if [ -n "$WEBGL_URL" ]; then
-              echo "[webgl build](${WEBGL_URL})"
+              echo "[webgl Build](${WEBGL_URL})"
             fi
             if [ -n "$PAGES_URL" ]; then
-              echo "[play on GitHub Pages](${PAGES_URL})"
+              echo "[Play on GitHub Pages](${PAGES_URL})"
             fi
 
             echo ""
@@ -167,7 +167,7 @@ jobs:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           username: "GitHub Actions"
           avatar-url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-          embed-title: "${{ inputs.workflow-name }} - ビルド${{ steps.prepare.outputs.label }}"
+          embed-title: "${{ inputs.workflow-name }} - ${{ steps.prepare.outputs.label }}"
           embed-color: ${{ steps.prepare.outputs.color }}
           embed-url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: ${{ steps.prepare.outputs.body }}

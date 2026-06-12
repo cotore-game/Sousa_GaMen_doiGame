@@ -4,11 +4,11 @@ on:
   workflow_call:
     inputs:
       version:
-        description: 'ビルドバージョン'
+        description: 'Build version'
         required: true
         type: string
       targetPlatform:
-        description: 'ターゲットプラットフォーム (StandaloneWindows64 / WebGL)'
+        description: 'Target platform (StandaloneWindows64 / WebGL)'
         required: false
         type: string
         default: 'StandaloneWindows64'
@@ -21,7 +21,7 @@ on:
         required: true
     outputs:
       artifact-name:
-        description: 'アップロードされたビルドアーティファクト名'
+        description: 'Uploaded build artifact name'
         value: ${{ jobs.build.outputs.artifact-name }}
 
 jobs:
@@ -63,13 +63,12 @@ jobs:
 
       - name: Set Output
         id: set-output
-        run: |
+        run: |\
           ARTIFACT_NAME="unity-build-${{ inputs.targetPlatform }}-${{ inputs.version }}"
           echo "artifact-name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
 
       - name: Upload Unity Build
         uses: actions/upload-artifact@v4
         with:
-          name:           unity-build-${{ inputs.targetPlatform }}-${{ inputs.version }}
-          path:           build/${{ inputs.targetPlatform }}/
-          retention-days: 1
+          name: unity-build-${{ inputs.targetPlatform }}-${{ inputs.version }}
+          path: build/${{ inputs.targetPlatform }}
