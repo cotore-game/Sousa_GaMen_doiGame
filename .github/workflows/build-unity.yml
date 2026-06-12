@@ -63,7 +63,7 @@ jobs:
 
       - name: Set Output
         id: set-output
-        run: |\
+        run: |
           ARTIFACT_NAME="unity-build-${{ inputs.targetPlatform }}-${{ inputs.version }}"
           echo "artifact-name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
 

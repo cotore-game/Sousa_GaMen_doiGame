@@ -45,7 +45,7 @@ jobs:
 
       - name: Locate WebGL Build Root
         id: locate
-        run: |\
+        run: |
           INDEX=$(find build/WebGL -name "index.html" | head -n 1)
           if [ -z "$INDEX" ]; then
             echo "Error: index.html not found"
@@ -60,7 +60,7 @@ jobs:
         run: mv "${{ steps.locate.outputs.build_root }}" pages-root
 
       - name: Inject OGP Meta Tags
-        run: |\
+        run: |
           python3 .github/scripts/inject-ogp.py \
             --meta ".github/index/meta.yml" \
             --index "pages-root/index.html" \

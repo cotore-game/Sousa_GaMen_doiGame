@@ -36,7 +36,7 @@ jobs:
 
       - name: Cleanup Development-Only Folders
         shell: powershell
-        run: |\
+        run: |
           .github/scripts/cleanup-build.ps1 -BuildPath "build/StandaloneWindows64"
 
       - name: Install Inno Setup
@@ -45,7 +45,7 @@ jobs:
 
       - name: Generate Installer Script from Template
         shell: powershell
-        run: |\
+        run: |
           New-Item -ItemType Directory -Force -Path installer | Out-Null
           .github/scripts/generate-iss.ps1 `
             -Version "${{ inputs.version }}" `
@@ -53,7 +53,7 @@ jobs:
 
       - name: Build Installer
         shell: powershell
-        run: |\
+        run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer-script.iss
           if ($LASTEXITCODE -ne 0) {
             Write-Error "Inno Setup failed with exit code $LASTEXITCODE"
@@ -64,7 +64,7 @@ jobs:
       - name: Set Output
         id: set-output
         shell: bash
-        run: |\
+        run: |
           echo "installer-name=GameLauncher-Setup-v${{ inputs.version }}.exe" >> $GITHUB_OUTPUT
 
       - name: Upload Installer Artifact
