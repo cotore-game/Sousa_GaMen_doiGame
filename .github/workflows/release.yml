@@ -21,12 +21,12 @@ on:
         type: boolean
         default: false
       create_release:
-        description: 'Create GitHub Release (Windowsビルド必須)'
+        description: 'Create GitHub Release (Windows build required)'
         required: true
         type: boolean
         default: true
       deploy_webgl:
-        description: 'Deploy WebGL to GitHub Pages (WebGLビルド必須)'
+        description: 'Deploy WebGL to GitHub Pages (WebGL build required)'
         required: true
         type: boolean
         default: false
@@ -79,23 +79,23 @@ jobs:
         id: flags
         run: |
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            echo "run_windows=true"     >> $GITHUB_OUTPUT
-            echo "run_webgl=true"       >> $GITHUB_OUTPUT
-            echo "should_release=true"  >> $GITHUB_OUTPUT
-            echo "should_deploy=true"   >> $GITHUB_OUTPUT
-            echo "is_draft=false"       >> $GITHUB_OUTPUT
+            echo "run_windows=true" >> $GITHUB_OUTPUT
+            echo "run_webgl=true" >> $GITHUB_OUTPUT
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "is_draft=false" >> $GITHUB_OUTPUT
             if [[ "${{ github.ref }}" =~ (beta|alpha|rc) ]]; then
-              echo "is_prerelease=true"  >> $GITHUB_OUTPUT
+              echo "is_prerelease=true" >> $GITHUB_OUTPUT
             else
               echo "is_prerelease=false" >> $GITHUB_OUTPUT
             fi
           else
-            echo "run_windows=${{ inputs.build_windows }}"      >> $GITHUB_OUTPUT
-            echo "run_webgl=${{ inputs.build_webgl }}"          >> $GITHUB_OUTPUT
-            echo "should_release=${{ inputs.create_release }}"  >> $GITHUB_OUTPUT
-            echo "should_deploy=${{ inputs.deploy_webgl }}"     >> $GITHUB_OUTPUT
-            echo "is_draft=${{ inputs.draft_release }}"         >> $GITHUB_OUTPUT
-            echo "is_prerelease=${{ inputs.prerelease }}"       >> $GITHUB_OUTPUT
+            echo "run_windows=${{ inputs.build_windows }}" >> $GITHUB_OUTPUT
+            echo "run_webgl=${{ inputs.build_webgl }}" >> $GITHUB_OUTPUT
+            echo "should_release=${{ inputs.create_release }}" >> $GITHUB_OUTPUT
+            echo "should_deploy=${{ inputs.deploy_webgl }}" >> $GITHUB_OUTPUT
+            echo "is_draft=${{ inputs.draft_release }}" >> $GITHUB_OUTPUT
+            echo "is_prerelease=${{ inputs.prerelease }}" >> $GITHUB_OUTPUT
           fi
 
   # ───────────────────────────────────────────────────
@@ -188,10 +188,10 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name:    ${{ steps.tag.outputs.tag_name }}
-          name:        "Game Launcher ${{ steps.tag.outputs.tag_name }}"
-          draft:       ${{ needs.init.outputs.is_draft == 'true' }}
-          prerelease:  ${{ needs.init.outputs.is_prerelease == 'true' }}
+          tag_name: ${{ steps.tag.outputs.tag_name }}
+          name: "Game Launcher ${{ steps.tag.outputs.tag_name }}"
+          draft: ${{ needs.init.outputs.is_draft == 'true' }}
+          prerelease: ${{ needs.init.outputs.is_prerelease == 'true' }}
           generate_release_notes: true
           body: |
             ## Game Launcher ${{ steps.tag.outputs.tag_name }}
@@ -250,8 +250,8 @@ jobs:
     with:
       status: "success"
       version: ${{ needs.init.outputs.version }}
-      workflow-name: "Game Launcher リリース"
-      job-name: "すべての処理が正常に完了しました"
+      workflow-name: "Game Launcher Release"
+      job-name: "All processes completed successfully"
       installer-artifact-name: ${{ needs.init.outputs.run_windows == 'true' && format('installer-v{0}', needs.init.outputs.version) || '' }}
       windows-artifact-name: ${{ needs.build-windows.outputs.artifact-name }}
       webgl-artifact-name: ${{ needs.build-webgl.outputs.artifact-name }}
@@ -267,10 +267,10 @@ jobs:
       contains(needs.*.result, 'failure')
     uses: ./.github/workflows/notify-discord.yml
     with:
-      status:        "failure"
-      version:       ${{ needs.init.outputs.version }}
-      workflow-name: "Game Launcher ビルド"
-      job-name:      "エラーが発生しました"
+      status: "failure"
+      version: ${{ needs.init.outputs.version }}
+      workflow-name: "Game Launcher Build"
+      job-name: "An error occurred"
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
@@ -283,9 +283,9 @@ jobs:
       !contains(needs.*.result, 'failure')
     uses: ./.github/workflows/notify-discord.yml
     with:
-      status:        "cancelled"
-      version:       ${{ needs.init.outputs.version }}
-      workflow-name: "Game Launcher ビルド"
-      job-name:      "ビルドがキャンセルされました"
+      status: "cancelled"
+      version: ${{ needs.init.outputs.version }}
+      workflow-name: "Game Launcher Build"
+      job-name: "Build was cancelled"
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
