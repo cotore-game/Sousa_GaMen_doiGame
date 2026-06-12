@@ -42,7 +42,6 @@ on:
         default: ''
     secrets:
       DISCORD_WEBHOOK_URL:
-        # オプション：未設定の場合は通知をスキップする（エラーにしない）
         required: false
 
 jobs:
@@ -50,7 +49,6 @@ jobs:
     name: Send Discord Notification
     runs-on: ubuntu-latest
 
-    # secrets は if 条件で直接参照できないため env 経由で空チェックを行う
     env:
       WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
@@ -62,7 +60,7 @@ jobs:
             echo "available=true" >> $GITHUB_OUTPUT
           else
             echo "available=false" >> $GITHUB_OUTPUT
-            echo "ℹDISCORD_WEBHOOK_URL が未設定のため通知をスキップします"
+            echo "ℹ️  DISCORD_WEBHOOK_URL が未設定のため通知をスキップします"
           fi
 
       - name: Prepare Notification Data
@@ -87,45 +85,41 @@ jobs:
               ;;
           esac
 
-          # ─── 成果物リンクを組み立て ───────────────────────────────────
-          # GitHub Actions の成果物 URL:
-          #   https://github.com/<owner>/<repo>/actions/runs/<run_id>/artifacts
-          # 個別アーティファクトへの直リンクは公開 API 経由でないと取れないため
-          # run の artifacts ページへのリンクを生成する。
-          BASE_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          ARTIFACTS_URL="${BASE_URL}/artifacts"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          ARTIFACTS_URL="${RUN_URL}/artifacts"
 
-          LINKS=""
-
-          # インストーラーアーティファクト
-          if [ -n "${{ inputs.installer-artifact-name }}" ]; then
-            LINKS="${LINKS}[インストーラー (EXE)](${ARTIFACTS_URL})\n"
-          fi
-
-          # Windows ZIPアーティファクト
-          if [ -n "${{ inputs.windows-artifact-name }}" ]; then
-            LINKS="${LINKS}[Windows ビルド (ZIP)](${ARTIFACTS_URL})\n"
-          fi
-
-          # WebGL アーティファクト
-          if [ -n "${{ inputs.webgl-artifact-name }}" ]; then
-            LINKS="${LINKS}[WebGL ビルド](${ARTIFACTS_URL})\n"
-          fi
-
-          # GitHub Pages
-          if [ -n "${{ inputs.pages-url }}" ]; then
-            LINKS="${LINKS}[GitHub Pages でプレイ](${{ inputs.pages-url }})\n"
-          fi
-
-          if [ -z "$LINKS" ]; then
-            LINKS="（成果物なし）"
-          fi
-
-          # 改行をエスケープして output に渡す（Discord embed は \n を改行として解釈）
-          # GitHub Actions の output は複数行を EOF 形式で渡す
+          # embed-description にすべて詰め込む
+          # tsickert/discord-webhook は embed-fields を未サポートのため
           {
-            echo "links<<EOF"
-            printf "${LINKS}"
+            echo "body<<EOF"
+            echo "**バージョン:** \`${{ inputs.version }}\`"
+            echo "**ジョブ:** ${{ inputs.job-name }}"
+            echo "**ブランチ/タグ:** \`${{ github.ref_name }}\`"
+            echo "**実行者:** ${{ github.actor }}"
+            echo ""
+
+            # 成果物リンク（存在するものだけ表示）
+            HAS_LINK=false
+
+            if [ -n "${{ inputs.installer-artifact-name }}" ]; then
+              echo "[インストーラー (EXE)](${ARTIFACTS_URL})"
+              HAS_LINK=true
+            fi
+            if [ -n "${{ inputs.windows-artifact-name }}" ]; then
+              echo "[Windows ビルド](${ARTIFACTS_URL})"
+              HAS_LINK=true
+            fi
+            if [ -n "${{ inputs.webgl-artifact-name }}" ]; then
+              echo "[WebGL ビルド](${ARTIFACTS_URL})"
+              HAS_LINK=true
+            fi
+            if [ -n "${{ inputs.pages-url }}" ]; then
+              echo "[GitHub Pages でプレイ](${{ inputs.pages-url }})"
+              HAS_LINK=true
+            fi
+
+            echo ""
+            echo "📋 [Actions ログを確認](${RUN_URL})"
             echo "EOF"
           } >> $GITHUB_OUTPUT
 
@@ -139,35 +133,4 @@ jobs:
           embed-title:       "${{ steps.prepare.outputs.emoji }} ${{ steps.prepare.outputs.title }}: ${{ inputs.workflow-name }}"
           embed-color:       ${{ steps.prepare.outputs.color }}
           embed-url:         "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          embed-description: |
-            **バージョン:** `${{ inputs.version }}`
-            **ステータス:** ${{ inputs.status }}
-            **ジョブ:** ${{ inputs.job-name }}
-          embed-fields: |
-            [
-              {
-                "name": "📦 リポジトリ",
-                "value": "[${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})",
-                "inline": true
-              },
-              {
-                "name": "🔀 ブランチ/タグ",
-                "value": "`${{ github.ref_name }}`",
-                "inline": true
-              },
-              {
-                "name": "👤 実行者",
-                "value": "${{ github.actor }}",
-                "inline": true
-              },
-              {
-                "name": "🔗 ダウンロード・リンク",
-                "value": "${{ steps.prepare.outputs.links }}",
-                "inline": false
-              },
-              {
-                "name": "📋 ワークフロー詳細",
-                "value": "[Actions ログを確認](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})",
-                "inline": false
-              }
-            ]
+          embed-description: ${{ steps.prepare.outputs.body }}
