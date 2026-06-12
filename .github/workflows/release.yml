@@ -54,13 +54,13 @@ jobs:
     name: Initialize
     runs-on: ubuntu-latest
     outputs:
-      version:        ${{ steps.resolve.outputs.version }}
-      run_windows:    ${{ steps.flags.outputs.run_windows }}
-      run_webgl:      ${{ steps.flags.outputs.run_webgl }}
+      version: ${{ steps.resolve.outputs.version }}
+      run_windows: ${{ steps.flags.outputs.run_windows }}
+      run_webgl: ${{ steps.flags.outputs.run_webgl }}
       should_release: ${{ steps.flags.outputs.should_release }}
-      should_deploy:  ${{ steps.flags.outputs.should_deploy }}
-      is_draft:       ${{ steps.flags.outputs.is_draft }}
-      is_prerelease:  ${{ steps.flags.outputs.is_prerelease }}
+      should_deploy: ${{ steps.flags.outputs.should_deploy }}
+      is_draft: ${{ steps.flags.outputs.is_draft }}
+      is_prerelease: ${{ steps.flags.outputs.is_prerelease }}
 
     steps:
       - name: Resolve Version
@@ -106,12 +106,12 @@ jobs:
     if: needs.init.outputs.run_windows == 'true'
     uses: ./.github/workflows/build-unity.yml
     with:
-      version:        ${{ needs.init.outputs.version }}
+      version: ${{ needs.init.outputs.version }}
       targetPlatform: 'StandaloneWindows64'
     secrets:
-      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      UNITY_LICENSE:  ${{ secrets.UNITY_LICENSE }}
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
 
   # ───────────────────────────────────────────────────
   # Unity ビルド（WebGL）
@@ -122,12 +122,12 @@ jobs:
     if: needs.init.outputs.run_webgl == 'true'
     uses: ./.github/workflows/build-unity.yml
     with:
-      version:        ${{ needs.init.outputs.version }}
+      version: ${{ needs.init.outputs.version }}
       targetPlatform: 'WebGL'
     secrets:
-      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      UNITY_LICENSE:  ${{ secrets.UNITY_LICENSE }}
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
 
   # ───────────────────────────────────────────────────
   # Inno Setup インストーラー作成
@@ -138,7 +138,7 @@ jobs:
     if: needs.init.outputs.run_windows == 'true'
     uses: ./.github/workflows/create-installer.yml
     with:
-      version:             ${{ needs.init.outputs.version }}
+      version: ${{ needs.init.outputs.version }}
       unity-artifact-name: ${{ needs.build-windows.outputs.artifact-name }}
 
   # ───────────────────────────────────────────────────
@@ -232,7 +232,7 @@ jobs:
       needs.build-webgl.result == 'success'
     uses: ./.github/workflows/deploy-webgl.yml
     with:
-      version:             ${{ needs.init.outputs.version }}
+      version: ${{ needs.init.outputs.version }}
       unity-artifact-name: ${{ needs.build-webgl.outputs.artifact-name }}
 
   # ───────────────────────────────────────────────────
@@ -247,14 +247,14 @@ jobs:
       !contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/notify-discord.yml
     with:
-      status:                   "success"
-      version:                  ${{ needs.init.outputs.version }}
-      workflow-name:            "Game Launcher リリース"
-      job-name:                 "すべての処理が正常に完了しました"
-      installer-artifact-name:  ${{ needs.init.outputs.run_windows == 'true' && format('installer-v{0}', needs.init.outputs.version) || '' }}
-      windows-artifact-name:    ${{ needs.build-windows.outputs.artifact-name }}
-      webgl-artifact-name:      ${{ needs.build-webgl.outputs.artifact-name }}
-      pages-url:                ${{ needs.deploy-webgl.outputs.page_url }}
+      status: "success"
+      version: ${{ needs.init.outputs.version }}
+      workflow-name: "Game Launcher リリース"
+      job-name: "すべての処理が正常に完了しました"
+      installer-artifact-name: ${{ needs.init.outputs.run_windows == 'true' && format('installer-v{0}', needs.init.outputs.version) || '' }}
+      windows-artifact-name: ${{ needs.build-windows.outputs.artifact-name }}
+      webgl-artifact-name: ${{ needs.build-webgl.outputs.artifact-name }}
+      pages-url: ${{ needs.deploy-webgl.outputs.page_url }}
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 

@@ -48,11 +48,8 @@ jobs:
   notify:
     name: Send Discord Notification
     runs-on: ubuntu-latest
-
-    # artifact ID 取得のために読み取り権限が必要
     permissions:
       actions: read
-
     env:
       WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
@@ -73,11 +70,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # GitHub API でこの run のアーティファクト一覧を取得
           API_URL="https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts?per_page=100"
           ARTIFACT_JSON=$(curl -s -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$API_URL")
 
-          # アーティファクト名から ID を引く
           get_id() {
             local name="$1"
             echo "$ARTIFACT_JSON" | python3 -c "
@@ -103,10 +98,9 @@ jobs:
               ID=$(get_id "$NAME")
               if [ -n "$ID" ]; then
                 echo "${VAR}_url=${BASE}/${ID}" >> $GITHUB_OUTPUT
-                echo "${VAR} artifact ID: $ID"
               else
                 echo "${VAR}_url=" >> $GITHUB_OUTPUT
-                echo "${VAR} artifact が見つかりませんでした (name: $NAME)"
+                echo "artifact not found: $NAME"
               fi
             else
               echo "${VAR}_url=" >> $GITHUB_OUTPUT
@@ -119,19 +113,16 @@ jobs:
         run: |
           case "${{ inputs.status }}" in
             success)
-              echo "color=3066993"   >> $GITHUB_OUTPUT
-              echo "emoji=✅"        >> $GITHUB_OUTPUT
-              echo "title=ビルド成功" >> $GITHUB_OUTPUT
+              echo "color=3066993" >> $GITHUB_OUTPUT
+              echo "label=✅ ビルド成功" >> $GITHUB_OUTPUT
               ;;
             failure)
-              echo "color=15158332"  >> $GITHUB_OUTPUT
-              echo "emoji=❌"        >> $GITHUB_OUTPUT
-              echo "title=ビルド失敗" >> $GITHUB_OUTPUT
+              echo "color=15158332" >> $GITHUB_OUTPUT
+              echo "label=❌ ビルド失敗" >> $GITHUB_OUTPUT
               ;;
             *)
-              echo "color=15844367"        >> $GITHUB_OUTPUT
-              echo "emoji=⚠️"              >> $GITHUB_OUTPUT
-              echo "title=ビルドキャンセル" >> $GITHUB_OUTPUT
+              echo "color=15844367" >> $GITHUB_OUTPUT
+              echo "label=⚠️ キャンセル" >> $GITHUB_OUTPUT
               ;;
           esac
 
@@ -139,34 +130,33 @@ jobs:
 
           {
             echo "body<<EOF"
-            echo "**バージョン:** \`${{ inputs.version }}\`"
-            echo "**ジョブ:** ${{ inputs.job-name }}"
-            echo "**ブランチ/タグ:** \`${{ github.ref_name }}\`"
-            echo "**実行者:** ${{ github.actor }}"
+            echo "**${{ inputs.workflow-name }}** ${{ inputs.job-name }}"
+            echo ""
+            echo "version: \`${{ inputs.version }}\`"
+            echo "ref: \`${{ github.ref_name }}\`"
+            echo "actor: ${{ github.actor }}"
             echo ""
 
-            # 成果物リンク（存在するものだけ表示）
-            HAS_LINK=false
+            INSTALLER_URL="${{ steps.artifacts.outputs.installer_url }}"
+            WINDOWS_URL="${{ steps.artifacts.outputs.windows_url }}"
+            WEBGL_URL="${{ steps.artifacts.outputs.webgl_url }}"
+            PAGES_URL="${{ inputs.pages-url }}"
 
-            if [ -n "${{ inputs.installer-artifact-name }}" ]; then
-              echo "[インストーラー (EXE)](${ARTIFACTS_URL})"
-              HAS_LINK=true
+            if [ -n "$INSTALLER_URL" ]; then
+              echo "[installer (exe)](${INSTALLER_URL})"
             fi
-            if [ -n "${{ inputs.windows-artifact-name }}" ]; then
-              echo "[Windows ビルド](${ARTIFACTS_URL})"
-              HAS_LINK=true
+            if [ -n "$WINDOWS_URL" ]; then
+              echo "[windows build](${WINDOWS_URL})"
             fi
-            if [ -n "${{ inputs.webgl-artifact-name }}" ]; then
-              echo "[WebGL ビルド](${ARTIFACTS_URL})"
-              HAS_LINK=true
+            if [ -n "$WEBGL_URL" ]; then
+              echo "[webgl build](${WEBGL_URL})"
             fi
-            if [ -n "${{ inputs.pages-url }}" ]; then
-              echo "[GitHub Pages でプレイ](${{ inputs.pages-url }})"
-              HAS_LINK=true
+            if [ -n "$PAGES_URL" ]; then
+              echo "[play on GitHub Pages](${PAGES_URL})"
             fi
 
             echo ""
-            echo "📋 [Actions ログを確認](${RUN_URL})"
+            echo "[workflow run](${RUN_URL})"
             echo "EOF"
           } >> $GITHUB_OUTPUT
 
@@ -174,10 +164,10 @@ jobs:
         if: steps.check.outputs.available == 'true'
         uses: tsickert/discord-webhook@v6.0.0
         with:
-          webhook-url:       ${{ secrets.DISCORD_WEBHOOK_URL }}
-          username:          "GitHub Actions"
-          avatar-url:        "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-          embed-title:       "${{ steps.prepare.outputs.emoji }} ${{ steps.prepare.outputs.title }}: ${{ inputs.workflow-name }}"
-          embed-color:       ${{ steps.prepare.outputs.color }}
-          embed-url:         "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: "GitHub Actions"
+          avatar-url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+          embed-title: "${{ inputs.workflow-name }} - ビルド${{ steps.prepare.outputs.label }}"
+          embed-color: ${{ steps.prepare.outputs.color }}
+          embed-url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: ${{ steps.prepare.outputs.body }}

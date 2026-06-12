@@ -59,7 +59,7 @@ jobs:
             Write-Error "Inno Setup failed with exit code $LASTEXITCODE"
             exit $LASTEXITCODE
           }
-          Write-Host "✅ インストーラービルド完了"
+          Write-Host "installer build complete"
 
       - name: Set Output
         id: set-output
