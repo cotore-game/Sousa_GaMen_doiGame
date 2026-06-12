@@ -41,11 +41,6 @@ on:
         type: boolean
         default: false
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 【重要】reusable workflow に継承させるための最上位権限設定
-#   pages: write / id-token: write  →  deploy-webgl.yml の GitHub Pages 用
-#   contents: write                 →  release ジョブの GitHub Release 作成用
-# ─────────────────────────────────────────────────────────────────────────────
 permissions:
   contents: write
   pages: write
@@ -53,7 +48,7 @@ permissions:
 
 jobs:
   # ───────────────────────────────────────────────────
-  # 0. 初期化：バージョン解決とフラグ確定
+  # 初期化
   # ───────────────────────────────────────────────────
   init:
     name: Initialize
@@ -83,7 +78,6 @@ jobs:
         id: flags
         run: |
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            # タグプッシュ時はすべて自動で有効
             echo "run_windows=true"     >> $GITHUB_OUTPUT
             echo "run_webgl=true"       >> $GITHUB_OUTPUT
             echo "should_release=true"  >> $GITHUB_OUTPUT
@@ -95,7 +89,6 @@ jobs:
               echo "is_prerelease=false" >> $GITHUB_OUTPUT
             fi
           else
-            # 手動実行時はチェックボックスの入力を反映
             echo "run_windows=${{ inputs.build_windows }}"      >> $GITHUB_OUTPUT
             echo "run_webgl=${{ inputs.build_webgl }}"          >> $GITHUB_OUTPUT
             echo "should_release=${{ inputs.create_release }}"  >> $GITHUB_OUTPUT
@@ -105,7 +98,7 @@ jobs:
           fi
 
   # ───────────────────────────────────────────────────
-  # 1a. Unity ビルド（Windows）
+  # Unity ビルド（Windows）
   # ───────────────────────────────────────────────────
   build-windows:
     name: Build (Windows)
@@ -121,7 +114,7 @@ jobs:
       UNITY_LICENSE:  ${{ secrets.UNITY_LICENSE }}
 
   # ───────────────────────────────────────────────────
-  # 1b. Unity ビルド（WebGL）
+  # Unity ビルド（WebGL）
   # ───────────────────────────────────────────────────
   build-webgl:
     name: Build (WebGL)
@@ -137,7 +130,7 @@ jobs:
       UNITY_LICENSE:  ${{ secrets.UNITY_LICENSE }}
 
   # ───────────────────────────────────────────────────
-  # 2. Inno Setup インストーラー作成（Windows ビルド後）
+  # Inno Setup インストーラー作成
   # ───────────────────────────────────────────────────
   create-installer:
     name: Create Installer
@@ -149,7 +142,7 @@ jobs:
       unity-artifact-name: ${{ needs.build-windows.outputs.artifact-name }}
 
   # ───────────────────────────────────────────────────
-  # 3. GitHub Release 作成（インストーラー + ZIP の2種類配布）
+  # GitHub Release 作成
   # ───────────────────────────────────────────────────
   release:
     name: Create GitHub Release
@@ -179,7 +172,6 @@ jobs:
         run: |
           cd build-windows
           zip -r "../release-assets/GameLauncher-v${{ needs.init.outputs.version }}-Windows.zip" .
-          echo "ZIP作成完了"
           ls -lh ../release-assets/
 
       - name: Resolve Tag Name
@@ -229,7 +221,7 @@ jobs:
             release-assets/GameLauncher-v${{ needs.init.outputs.version }}-Windows.zip
 
   # ───────────────────────────────────────────────────
-  # 4. WebGL → GitHub Pages デプロイ
+  # WebGL → GitHub Pages デプロイ
   # ───────────────────────────────────────────────────
   deploy-webgl:
     name: Deploy to GitHub Pages
@@ -244,7 +236,7 @@ jobs:
       unity-artifact-name: ${{ needs.build-webgl.outputs.artifact-name }}
 
   # ───────────────────────────────────────────────────
-  # 5. Discord 通知（成功・失敗・キャンセル、常に実行）
+  # Discord 通知
   # ───────────────────────────────────────────────────
   notify-success:
     name: Notify Success
@@ -255,10 +247,14 @@ jobs:
       !contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/notify-discord.yml
     with:
-      status:        "success"
-      version:       ${{ needs.init.outputs.version }}
-      workflow-name: "Game Launcher リリース"
-      job-name:      "すべての処理が正常に完了しました"
+      status:                   "success"
+      version:                  ${{ needs.init.outputs.version }}
+      workflow-name:            "Game Launcher リリース"
+      job-name:                 "すべての処理が正常に完了しました"
+      installer-artifact-name:  ${{ needs.init.outputs.run_windows == 'true' && format('installer-v{0}', needs.init.outputs.version) || '' }}
+      windows-artifact-name:    ${{ needs.build-windows.outputs.artifact-name }}
+      webgl-artifact-name:      ${{ needs.build-webgl.outputs.artifact-name }}
+      pages-url:                ${{ needs.deploy-webgl.outputs.page_url }}
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 

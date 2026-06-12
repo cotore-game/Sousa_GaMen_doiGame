@@ -1,0 +1,27 @@
+# OGP / SNS プレビュー設定
+# このファイルが存在する場合、デプロイ時に index.html へ自動で meta タグが挿入されます。
+#
+# ファイル配置:
+#   .github/index/meta.yml        ← このファイル
+#   .github/index/<icon_file>     ← アイコン画像（例: icon.png）
+#
+# Discord や Twitter でURLを貼ったときに表示されるプレビューに反映されます。
+
+# false にすると、このファイルが存在していても注入を完全スキップします
+enabled: true
+
+# ページタイトル（og:title / twitter:title）
+title: "そうさ\"がめん\"どいゲーム"
+
+# 説明文（description / og:description / twitter:description）
+description: "ブラウザで遊べるタイピングゲームです。"
+
+# アイコン・OGP画像の設定
+# false にするとアイコンを埋め込まない
+icon: true
+
+# .github/index/ 以下に置く画像ファイル名
+icon_file: "icon.png"
+
+# ブラウザのテーマカラー
+# theme_color: "#1a1a2e"

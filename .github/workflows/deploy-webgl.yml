@@ -12,6 +12,10 @@ on:
         description: 'ダウンロードするUnityビルドアーティファクト名'
         required: true
         type: string
+    outputs:
+      page_url:
+        description: 'デプロイされた GitHub Pages の URL'
+        value: ${{ jobs.deploy-webgl.outputs.page_url }}
 
 jobs:
   deploy-webgl:
@@ -26,16 +30,23 @@ jobs:
       name: github-pages
       url:  ${{ steps.deployment.outputs.page_url }}
 
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Download Unity Build
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.unity-artifact-name }}
           path: build/WebGL
+
+      # index.html があるサブディレクトリを pages-root/ として確定
       - name: Locate WebGL Build Root
         id: locate
         run: |
-          # index.html があるディレクトリを探す（BuildName が変わっても追従）
           INDEX=$(find build/WebGL -name "index.html" | head -n 1)
           if [ -z "$INDEX" ]; then
             echo "index.html が見つかりません"
@@ -49,8 +60,96 @@ jobs:
       - name: Move WebGL Root to pages-root
         run: |
           mv "${{ steps.locate.outputs.build_root }}" pages-root
-          echo "pages-root の内容:"
-          ls -lh pages-root/
+
+
+      - name: Inject OGP Meta Tags
+        run: |
+          META_YML=".github/index/meta.yml"
+
+          if [ ! -f "$META_YML" ]; then
+            echo "$META_YML が存在しないため OGP 注入をスキップします"
+            exit 0
+          fi
+
+          # yq が利用可能か確認（GitHub Actions ubuntu-latest には入っている）
+          parse() { grep -m1 "^$1:" "$META_YML" | sed "s/^$1:[[:space:]]*//" | tr -d '"'"'" | xargs; }
+
+          ENABLED=$(parse enabled)
+          if [ "$ENABLED" = "false" ]; then
+            echo "meta.yml の enabled: false のため OGP 注入をスキップします"
+            exit 0
+          fi
+
+          TITLE=$(parse title)
+          DESCRIPTION=$(parse description)
+          ICON_ENABLED=$(parse icon)
+          ICON_FILE=$(parse icon_file)
+          THEME_COLOR=$(parse theme_color)
+
+          REPO_URL="https://${{ github.repository_owner }}.github.io/$(echo '${{ github.repository }}' | cut -d'/' -f2)"
+
+          # 注入する meta タグを組み立て
+          INJECT=""
+
+          if [ -n "$TITLE" ]; then
+            INJECT="${INJECT}  <meta property=\"og:title\" content=\"${TITLE}\">\n"
+            INJECT="${INJECT}  <meta name=\"twitter:title\" content=\"${TITLE}\">\n"
+          fi
+
+          if [ -n "$DESCRIPTION" ]; then
+            INJECT="${INJECT}  <meta name=\"description\" content=\"${DESCRIPTION}\">\n"
+            INJECT="${INJECT}  <meta property=\"og:description\" content=\"${DESCRIPTION}\">\n"
+            INJECT="${INJECT}  <meta name=\"twitter:description\" content=\"${DESCRIPTION}\">\n"
+          fi
+
+          INJECT="${INJECT}  <meta property=\"og:type\" content=\"website\">\n"
+          INJECT="${INJECT}  <meta property=\"og:url\" content=\"${REPO_URL}\">\n"
+          INJECT="${INJECT}  <meta name=\"twitter:card\" content=\"summary_large_image\">\n"
+
+          # アイコン画像
+          if [ "$ICON_ENABLED" != "false" ] && [ -n "$ICON_FILE" ]; then
+            SRC_ICON=".github/index/${ICON_FILE}"
+            if [ -f "$SRC_ICON" ]; then
+              cp "$SRC_ICON" "pages-root/${ICON_FILE}"
+              INJECT="${INJECT}  <meta property=\"og:image\" content=\"${REPO_URL}/${ICON_FILE}\">\n"
+              INJECT="${INJECT}  <meta name=\"twitter:image\" content=\"${REPO_URL}/${ICON_FILE}\">\n"
+              INJECT="${INJECT}  <link rel=\"icon\" href=\"${ICON_FILE}\">\n"
+              echo "アイコン画像をコピー: ${ICON_FILE}"
+            else
+              echo "icon_file に指定された ${SRC_ICON} が見つかりません（スキップ）"
+            fi
+          fi
+
+          if [ -n "$THEME_COLOR" ]; then
+            INJECT="${INJECT}  <meta name=\"theme-color\" content=\"${THEME_COLOR}\">\n"
+          fi
+
+          # </head> の直前に挿入
+          INDEX_HTML="pages-root/index.html"
+          # バックアップ
+          cp "$INDEX_HTML" "${INDEX_HTML}.bak"
+
+          # printf で改行を展開してから sed で挿入
+          INJECT_BLOCK=$(printf "${INJECT}")
+          # sedの区切り文字を | に変更（URLに / が入るため）
+          python3 - <<PYEOF
+          import re, pathlib
+
+          html = pathlib.Path("${INDEX_HTML}").read_text(encoding="utf-8")
+          block = """${INJECT_BLOCK}"""
+          # </head> の直前に挿入（大文字小文字を問わない）
+          patched = re.sub(r'(?i)(</head>)', block + r'\1', html, count=1)
+          pathlib.Path("${INDEX_HTML}").write_text(patched, encoding="utf-8")
+          print("OGP meta タグを index.html に注入しました")
+          PYEOF
+
+          # 失敗した場合はバックアップに戻す
+          if [ $? -ne 0 ]; then
+            echo "注入スクリプト失敗 → バックアップから復元します"
+            mv "${INDEX_HTML}.bak" "$INDEX_HTML"
+          else
+            rm -f "${INDEX_HTML}.bak"
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

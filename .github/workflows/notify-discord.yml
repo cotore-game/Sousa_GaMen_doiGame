@@ -20,6 +20,26 @@ on:
         required: false
         type: string
         default: 'Build'
+      installer-artifact-name:
+        description: 'インストーラーアーティファクト名 (省略可)'
+        required: false
+        type: string
+        default: ''
+      windows-artifact-name:
+        description: 'Windows ビルドアーティファクト名 (省略可)'
+        required: false
+        type: string
+        default: ''
+      webgl-artifact-name:
+        description: 'WebGL ビルドアーティファクト名 (省略可)'
+        required: false
+        type: string
+        default: ''
+      pages-url:
+        description: 'デプロイされた GitHub Pages の URL (省略可)'
+        required: false
+        type: string
+        default: ''
     secrets:
       DISCORD_WEBHOOK_URL:
         # オプション：未設定の場合は通知をスキップする（エラーにしない）
@@ -42,7 +62,7 @@ jobs:
             echo "available=true" >> $GITHUB_OUTPUT
           else
             echo "available=false" >> $GITHUB_OUTPUT
-            echo "ℹ️  DISCORD_WEBHOOK_URL が未設定のため通知をスキップします"
+            echo "ℹDISCORD_WEBHOOK_URL が未設定のため通知をスキップします"
           fi
 
       - name: Prepare Notification Data
@@ -61,11 +81,53 @@ jobs:
               echo "title=ビルド失敗" >> $GITHUB_OUTPUT
               ;;
             *)
-              echo "color=15844367"         >> $GITHUB_OUTPUT
-              echo "emoji=⚠️"               >> $GITHUB_OUTPUT
-              echo "title=ビルドキャンセル"   >> $GITHUB_OUTPUT
+              echo "color=15844367"        >> $GITHUB_OUTPUT
+              echo "emoji=⚠️"              >> $GITHUB_OUTPUT
+              echo "title=ビルドキャンセル" >> $GITHUB_OUTPUT
               ;;
           esac
+
+          # ─── 成果物リンクを組み立て ───────────────────────────────────
+          # GitHub Actions の成果物 URL:
+          #   https://github.com/<owner>/<repo>/actions/runs/<run_id>/artifacts
+          # 個別アーティファクトへの直リンクは公開 API 経由でないと取れないため
+          # run の artifacts ページへのリンクを生成する。
+          BASE_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          ARTIFACTS_URL="${BASE_URL}/artifacts"
+
+          LINKS=""
+
+          # インストーラーアーティファクト
+          if [ -n "${{ inputs.installer-artifact-name }}" ]; then
+            LINKS="${LINKS}[インストーラー (EXE)](${ARTIFACTS_URL})\n"
+          fi
+
+          # Windows ZIPアーティファクト
+          if [ -n "${{ inputs.windows-artifact-name }}" ]; then
+            LINKS="${LINKS}[Windows ビルド (ZIP)](${ARTIFACTS_URL})\n"
+          fi
+
+          # WebGL アーティファクト
+          if [ -n "${{ inputs.webgl-artifact-name }}" ]; then
+            LINKS="${LINKS}[WebGL ビルド](${ARTIFACTS_URL})\n"
+          fi
+
+          # GitHub Pages
+          if [ -n "${{ inputs.pages-url }}" ]; then
+            LINKS="${LINKS}[GitHub Pages でプレイ](${{ inputs.pages-url }})\n"
+          fi
+
+          if [ -z "$LINKS" ]; then
+            LINKS="（成果物なし）"
+          fi
+
+          # 改行をエスケープして output に渡す（Discord embed は \n を改行として解釈）
+          # GitHub Actions の output は複数行を EOF 形式で渡す
+          {
+            echo "links<<EOF"
+            printf "${LINKS}"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Send Discord Notification
         if: steps.check.outputs.available == 'true'
@@ -99,8 +161,13 @@ jobs:
                 "inline": true
               },
               {
-                "name": "🔗 詳細",
-                "value": "[ワークフローを確認](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+                "name": "🔗 ダウンロード・リンク",
+                "value": "${{ steps.prepare.outputs.links }}",
+                "inline": false
+              },
+              {
+                "name": "📋 ワークフロー詳細",
+                "value": "[Actions ログを確認](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})",
                 "inline": false
               }
             ]
