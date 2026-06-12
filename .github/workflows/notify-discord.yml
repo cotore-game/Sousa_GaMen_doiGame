@@ -143,20 +143,20 @@ jobs:
             PAGES_URL="${{ inputs.pages-url }}"
 
             if [ -n "$INSTALLER_URL" ]; then
-              echo "[installer (exe)](${INSTALLER_URL})"
+              echo "[Installer (exe)](${INSTALLER_URL})"
             fi
             if [ -n "$WINDOWS_URL" ]; then
-              echo "[windows Build](${WINDOWS_URL})"
+              echo "[Windows Build](${WINDOWS_URL})"
             fi
             if [ -n "$WEBGL_URL" ]; then
-              echo "[webgl Build](${WEBGL_URL})"
+              echo "[WebGL Build](${WEBGL_URL})"
             fi
             if [ -n "$PAGES_URL" ]; then
               echo "[Play on GitHub Pages](${PAGES_URL})"
             fi
 
             echo ""
-            echo "[workflow run](${RUN_URL})"
+            echo "[Show Workflow Run](${RUN_URL})"
             echo "EOF"
           } >> $GITHUB_OUTPUT
 
