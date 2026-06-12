@@ -49,6 +49,10 @@ jobs:
     name: Send Discord Notification
     runs-on: ubuntu-latest
 
+    # artifact ID 取得のために読み取り権限が必要
+    permissions:
+      actions: read
+
     env:
       WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
@@ -60,8 +64,54 @@ jobs:
             echo "available=true" >> $GITHUB_OUTPUT
           else
             echo "available=false" >> $GITHUB_OUTPUT
-            echo "ℹ️  DISCORD_WEBHOOK_URL が未設定のため通知をスキップします"
+            echo "DISCORD_WEBHOOK_URL が未設定のため通知をスキップします"
           fi
+
+      - name: Resolve Artifact URLs
+        id: artifacts
+        if: steps.check.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # GitHub API でこの run のアーティファクト一覧を取得
+          API_URL="https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts?per_page=100"
+          ARTIFACT_JSON=$(curl -s -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$API_URL")
+
+          # アーティファクト名から ID を引く
+          get_id() {
+            local name="$1"
+            echo "$ARTIFACT_JSON" | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for a in data.get('artifacts', []):
+              if a['name'] == '$name':
+                  print(a['id'])
+                  break
+          "
+          }
+
+          BASE="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts"
+
+          for VAR in installer windows webgl; do
+            case $VAR in
+              installer) NAME="${{ inputs.installer-artifact-name }}" ;;
+              windows)   NAME="${{ inputs.windows-artifact-name }}" ;;
+              webgl)     NAME="${{ inputs.webgl-artifact-name }}" ;;
+            esac
+
+            if [ -n "$NAME" ]; then
+              ID=$(get_id "$NAME")
+              if [ -n "$ID" ]; then
+                echo "${VAR}_url=${BASE}/${ID}" >> $GITHUB_OUTPUT
+                echo "${VAR} artifact ID: $ID"
+              else
+                echo "${VAR}_url=" >> $GITHUB_OUTPUT
+                echo "${VAR} artifact が見つかりませんでした (name: $NAME)"
+              fi
+            else
+              echo "${VAR}_url=" >> $GITHUB_OUTPUT
+            fi
+          done
 
       - name: Prepare Notification Data
         id: prepare
@@ -86,10 +136,7 @@ jobs:
           esac
 
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          ARTIFACTS_URL="${RUN_URL}/artifacts"
 
-          # embed-description にすべて詰め込む
-          # tsickert/discord-webhook は embed-fields を未サポートのため
           {
             echo "body<<EOF"
             echo "**バージョン:** \`${{ inputs.version }}\`"
