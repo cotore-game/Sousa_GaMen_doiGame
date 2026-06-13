@@ -49,7 +49,7 @@ permissions:
 
 jobs:
   # ───────────────────────────────────────────────────
-  # 初期化
+  # 初期化, プロジェクト設定読み込み
   # ───────────────────────────────────────────────────
   init:
     name: Initialize
@@ -62,8 +62,52 @@ jobs:
       should_deploy: ${{ steps.flags.outputs.should_deploy }}
       is_draft: ${{ steps.flags.outputs.is_draft }}
       is_prerelease: ${{ steps.flags.outputs.is_prerelease }}
+      # .github/project.yml から読み込んだ値
+      app_name: ${{ steps.config.outputs.app_name }}
+      app_exe_name: ${{ steps.config.outputs.app_exe_name }}
+      app_id: ${{ steps.config.outputs.app_id }}
+      app_publisher: ${{ steps.config.outputs.app_publisher }}
+      system_requirements: ${{ steps.config.outputs.system_requirements }}
+      workflow_display_name: ${{ steps.config.outputs.workflow_display_name }}
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Load Project Config
+        id: config
+        run: |
+          python3 << 'PYEOF'
+          import os
+
+          result = {}
+          with open('.github/project.yml', encoding='utf-8') as f:
+              for line in f:
+                  line = line.strip()
+                  if not line or line.startswith('#'):
+                      continue
+                  if ':' not in line:
+                      continue
+                  key, _, val = line.partition(':')
+                  val = val.strip().strip('"\'')
+                  result[key.strip()] = val
+
+          defaults = {
+              'app_name': 'My Game',
+              'app_exe_name': 'MyGame',
+              'app_id': 'MyGame',
+              'app_publisher': 'your-org',
+              'system_requirements': 'Windows 10 / 11 (64-bit)',
+              'workflow_display_name': 'My Game',
+          }
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              for key, default in defaults.items():
+                  val = result.get(key, default)
+                  out.write(f'{key}={val}\n')
+                  print(f'  {key}: {val}')
+          PYEOF
+
       - name: Resolve Version
         id: resolve
         run: |
@@ -109,6 +153,7 @@ jobs:
     with:
       version: ${{ needs.init.outputs.version }}
       targetPlatform: 'StandaloneWindows64'
+      build-name: ${{ needs.init.outputs.app_exe_name }}
     secrets:
       UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -125,6 +170,7 @@ jobs:
     with:
       version: ${{ needs.init.outputs.version }}
       targetPlatform: 'WebGL'
+      build-name: ${{ needs.init.outputs.app_exe_name }}
     secrets:
       UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -141,6 +187,10 @@ jobs:
     with:
       version: ${{ needs.init.outputs.version }}
       unity-artifact-name: ${{ needs.build-windows.outputs.artifact-name }}
+      app-name: ${{ needs.init.outputs.app_name }}
+      app-exe-name: ${{ needs.init.outputs.app_exe_name }}
+      app-id: ${{ needs.init.outputs.app_id }}
+      app-publisher: ${{ needs.init.outputs.app_publisher }}
 
   # ───────────────────────────────────────────────────
   # GitHub Release 作成
@@ -172,7 +222,7 @@ jobs:
       - name: Create ZIP Archive
         run: |
           cd build-windows
-          zip -r "../release-assets/GameLauncher-v${{ needs.init.outputs.version }}-Windows.zip" .
+          zip -r "../release-assets/${{ needs.init.outputs.app_exe_name }}-v${{ needs.init.outputs.version }}-Windows.zip" .
           ls -lh ../release-assets/
 
       - name: Resolve Tag Name
@@ -189,24 +239,24 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag_name }}
-          name: "Game Launcher ${{ steps.tag.outputs.tag_name }}"
+          name: "${{ needs.init.outputs.app_name }} ${{ steps.tag.outputs.tag_name }}"
           draft: ${{ needs.init.outputs.is_draft == 'true' }}
           prerelease: ${{ needs.init.outputs.is_prerelease == 'true' }}
           generate_release_notes: true
           body: |
-            ## Game Launcher ${{ steps.tag.outputs.tag_name }}
+            ## ${{ needs.init.outputs.app_name }} ${{ steps.tag.outputs.tag_name }}
 
             ### インストール方法
 
             #### インストーラー版（推奨）
-            1. `GameLauncher-Setup-v${{ needs.init.outputs.version }}.exe` をダウンロード
+            1. `${{ needs.init.outputs.app_exe_name }}-Setup-v${{ needs.init.outputs.version }}.exe` をダウンロード
             2. ファイルを実行してウィザードに従ってインストール
-            3. スタートメニューの「Game Launcher」から起動
+            3. スタートメニューの「${{ needs.init.outputs.app_name }}」から起動
 
             #### ポータブル版（ZIP）
-            1. `GameLauncher-v${{ needs.init.outputs.version }}-Windows.zip` をダウンロード
+            1. `${{ needs.init.outputs.app_exe_name }}-v${{ needs.init.outputs.version }}-Windows.zip` をダウンロード
             2. 任意の場所に展開
-            3. `GameLauncher.exe` を起動
+            3. `${{ needs.init.outputs.app_exe_name }}.exe` を起動
 
             ### ビルド情報
             | 項目 | 値 |
@@ -216,10 +266,10 @@ jobs:
             | コミット | [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |
 
             ### 🔧 システム要件
-            - Windows 10 / 11 (64-bit)
+            - ${{ needs.init.outputs.system_requirements }}
           files: |
-            release-assets/GameLauncher-Setup-v${{ needs.init.outputs.version }}.exe
-            release-assets/GameLauncher-v${{ needs.init.outputs.version }}-Windows.zip
+            release-assets/${{ needs.init.outputs.app_exe_name }}-Setup-v${{ needs.init.outputs.version }}.exe
+            release-assets/${{ needs.init.outputs.app_exe_name }}-v${{ needs.init.outputs.version }}-Windows.zip
 
   # ───────────────────────────────────────────────────
   # WebGL → GitHub Pages デプロイ
@@ -250,7 +300,7 @@ jobs:
     with:
       status: "success"
       version: ${{ needs.init.outputs.version }}
-      workflow-name: "Game Launcher Release"
+      workflow-name: "${{ needs.init.outputs.workflow_display_name }}"
       job-name: "All processes completed successfully"
       installer-artifact-name: ${{ needs.init.outputs.run_windows == 'true' && format('installer-v{0}', needs.init.outputs.version) || '' }}
       windows-artifact-name: ${{ needs.build-windows.outputs.artifact-name }}
@@ -269,7 +319,7 @@ jobs:
     with:
       status: "failure"
       version: ${{ needs.init.outputs.version }}
-      workflow-name: "Game Launcher Build"
+      workflow-name: "${{ needs.init.outputs.workflow_display_name }}"
       job-name: "An error occurred"
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -285,7 +335,7 @@ jobs:
     with:
       status: "cancelled"
       version: ${{ needs.init.outputs.version }}
-      workflow-name: "Game Launcher Build"
+      workflow-name: "${{ needs.init.outputs.workflow_display_name }}"
       job-name: "Build was cancelled"
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}

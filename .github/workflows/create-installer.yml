@@ -11,6 +11,26 @@ on:
         description: 'Unity build artifact name to download'
         required: true
         type: string
+      app-name:
+        description: 'Application display name'
+        required: false
+        type: string
+        default: 'My Game'
+      app-exe-name:
+        description: 'Executable filename without .exe'
+        required: false
+        type: string
+        default: 'MyGame'
+      app-id:
+        description: 'Application ID for install directory and registry key'
+        required: false
+        type: string
+        default: 'MyGame'
+      app-publisher:
+        description: 'Publisher name'
+        required: false
+        type: string
+        default: 'your-org'
     outputs:
       installer-name:
         description: 'Installer filename'
@@ -49,7 +69,11 @@ jobs:
           New-Item -ItemType Directory -Force -Path installer | Out-Null
           .github/scripts/generate-iss.ps1 `
             -Version "${{ inputs.version }}" `
-            -RepoUrl "https://github.com/${{ github.repository }}"
+            -RepoUrl "https://github.com/${{ github.repository }}" `
+            -AppName "${{ inputs.app-name }}" `
+            -AppExeName "${{ inputs.app-exe-name }}" `
+            -AppId "${{ inputs.app-id }}" `
+            -AppPublisher "${{ inputs.app-publisher }}"
 
       - name: Build Installer
         shell: powershell
@@ -59,13 +83,13 @@ jobs:
             Write-Error "Inno Setup failed with exit code $LASTEXITCODE"
             exit $LASTEXITCODE
           }
-          Write-Host "installer build complete"
+          Write-Host "Installer build complete"
 
       - name: Set Output
         id: set-output
         shell: bash
         run: |
-          echo "installer-name=GameLauncher-Setup-v${{ inputs.version }}.exe" >> $GITHUB_OUTPUT
+          echo "installer-name=${{ inputs.app-exe-name }}-Setup-v${{ inputs.version }}.exe" >> $GITHUB_OUTPUT
 
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4

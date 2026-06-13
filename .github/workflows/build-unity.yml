@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: 'StandaloneWindows64'
+      build-name:
+        description: 'Unity build name (executable filename without .exe)'
+        required: false
+        type: string
+        default: 'GameBuild'
     secrets:
       UNITY_EMAIL:
         required: true
@@ -57,7 +62,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          buildName: GameLauncher
+          buildName: ${{ inputs.build-name }}
           targetPlatform: ${{ inputs.targetPlatform }}
           allowDirtyBuild: true
 
