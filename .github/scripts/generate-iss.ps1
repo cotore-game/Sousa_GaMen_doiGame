@@ -18,6 +18,7 @@ if (-not (Test-Path $TemplatePath)) {
     exit 1
 }
 
+# テンプレートを UTF-8 で読み込む
 $content = Get-Content -Path $TemplatePath -Raw -Encoding UTF8
 
 # プレースホルダーを実際の値に置換
@@ -35,7 +36,8 @@ if ($outputDir -and -not (Test-Path $outputDir)) {
     New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
 }
 
-$content | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline:$false
+# UTF-8 BOM付きで書き出す（Inno Setup 6 は BOM付き UTF-8 を正しく認識する）
+$content | Out-File -FilePath $OutputPath -Encoding UTF8
 Write-Host "Generated: $OutputPath"
 Write-Host "  App:     $AppName ($AppExeName.exe)"
 Write-Host "  Version: $Version"

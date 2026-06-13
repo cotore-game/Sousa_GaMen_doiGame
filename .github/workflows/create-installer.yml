@@ -65,15 +65,20 @@ jobs:
 
       - name: Generate Installer Script from Template
         shell: powershell
+        env:
+          APP_NAME: ${{ inputs.app-name }}
+          APP_EXE_NAME: ${{ inputs.app-exe-name }}
+          APP_ID: ${{ inputs.app-id }}
+          APP_PUBLISHER: ${{ inputs.app-publisher }}
         run: |
           New-Item -ItemType Directory -Force -Path installer | Out-Null
           .github/scripts/generate-iss.ps1 `
             -Version "${{ inputs.version }}" `
             -RepoUrl "https://github.com/${{ github.repository }}" `
-            -AppName "${{ inputs.app-name }}" `
-            -AppExeName "${{ inputs.app-exe-name }}" `
-            -AppId "${{ inputs.app-id }}" `
-            -AppPublisher "${{ inputs.app-publisher }}"
+            -AppName "$env:APP_NAME" `
+            -AppExeName "$env:APP_EXE_NAME" `
+            -AppId "$env:APP_ID" `
+            -AppPublisher "$env:APP_PUBLISHER"
 
       - name: Build Installer
         shell: powershell

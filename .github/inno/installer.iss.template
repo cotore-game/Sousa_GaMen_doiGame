@@ -2,6 +2,7 @@
 ; Inno Setup Installer Script Template
 ; Generated automatically by GitHub Actions. Do not edit directly.
 ; =============================================================================
+#pragma encoding "UTF-8"
 
 [Setup]
 AppName={{APP_NAME}}
