@@ -105,3 +105,7 @@ CaseSensitiveTest
 # Editor generated files
 .vsconfig
 .vscode
+
+# Local AI tooling and Unity CLI Loop generated files
+/.codex/
+/.uloop/
