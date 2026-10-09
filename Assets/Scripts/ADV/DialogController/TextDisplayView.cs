@@ -16,17 +16,6 @@ namespace ADV.Presentation
         [SerializeField] private TMP_Text bodyText;
         [SerializeField] private GameObject skipIcon;
 
-        [Header("Text Settings")]
-        [SerializeField, Min(1f)] private float bodyFontSize = 50f;
-
-        private void Awake()
-        {
-            // 自動サイズ調整による台詞ごとの文字サイズ変化を防ぐ。
-            // ADVシーンで設定した基準サイズに本文を固定する。
-            bodyText.enableAutoSizing = false;
-            bodyText.fontSize = bodyFontSize;
-        }
-
         public void SetActive(bool active)
         {
             speechBubble.SetActive(active);
