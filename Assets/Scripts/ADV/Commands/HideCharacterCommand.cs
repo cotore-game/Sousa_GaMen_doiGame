@@ -2,7 +2,7 @@
 using ADV.Core;
 using ADV.Presentation;
 using CSV4Unity;
-using CSV4Unity.Fields;
+using ADV.Data;
 using System;
 
 namespace ADV.Commands
@@ -25,13 +25,13 @@ namespace ADV.Commands
             _characterPresenter = characterPresenter ?? throw new ArgumentNullException(nameof(characterPresenter));
         }
 
-        public override async UniTask ExecuteAsync(LineData<ScenarioFields> lineData, CancellableTask cancellable)
+        public override async UniTask ExecuteAsync(CsvRow<ScenarioFields> lineData, CancellableTask cancellable)
         {
             // CharacterPresenterのClearAllを呼ぶ
             await _characterPresenter.ClearAll(cancellable);
         }
 
-        public override bool Validate(LineData<ScenarioFields> lineData, out string errorMessage)
+        public override bool Validate(CsvRow<ScenarioFields> lineData, out string errorMessage)
         {
             // このコマンドに引数は不要
             errorMessage = null;

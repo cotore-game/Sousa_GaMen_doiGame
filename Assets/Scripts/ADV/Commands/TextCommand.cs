@@ -3,7 +3,7 @@ using UnityEngine;
 using ADV.Core;
 using ADV.Presentation;
 using CSV4Unity;
-using CSV4Unity.Fields;
+using ADV.Data;
 using System;
 
 namespace ADV.Commands
@@ -30,13 +30,13 @@ namespace ADV.Commands
             _textPresenter = textPresenter ?? throw new ArgumentNullException(nameof(textPresenter));
         }
 
-        public override async UniTask ExecuteAsync(LineData<ScenarioFields> lineData, CancellableTask cancellable)
+        public override async UniTask ExecuteAsync(CsvRow<ScenarioFields> lineData, CancellableTask cancellable)
         {
             // パラメータ取得
-            string characterName = lineData.GetOrDefault<string>(ScenarioFields.Arg1, "");
-            int interval = lineData.GetOrDefault<int>(ScenarioFields.Arg2, DEFAULT_INTERVAL);
-            int skipThreshold = lineData.GetOrDefault<int>(ScenarioFields.Arg3, DEFAULT_SKIP_THRESHOLD);
-            string bodyText = lineData.GetOrDefault<string>(ScenarioFields.Text, "");
+            string characterName = GetOrDefault<string>(lineData, ScenarioFields.Arg1, "");
+            int interval = GetOrDefault<int>(lineData, ScenarioFields.Arg2, DEFAULT_INTERVAL);
+            int skipThreshold = GetOrDefault<int>(lineData, ScenarioFields.Arg3, DEFAULT_SKIP_THRESHOLD);
+            string bodyText = GetOrDefault<string>(lineData, ScenarioFields.Text, "");
 
             if (string.IsNullOrEmpty(bodyText))
             {
@@ -56,11 +56,11 @@ namespace ADV.Commands
             );
         }
 
-        public override bool Validate(LineData<ScenarioFields> lineData, out string errorMessage)
+        public override bool Validate(CsvRow<ScenarioFields> lineData, out string errorMessage)
         {
             errorMessage = null;
 
-            var text = lineData.GetOrDefault<string>(ScenarioFields.Text, null);
+            var text = GetOrDefault<string>(lineData, ScenarioFields.Text, null);
             if (string.IsNullOrWhiteSpace(text))
             {
                 errorMessage = "Text command requires non-empty Text field";

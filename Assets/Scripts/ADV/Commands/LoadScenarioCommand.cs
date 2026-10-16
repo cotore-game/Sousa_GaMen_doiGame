@@ -2,7 +2,7 @@
 using ADV.Core;
 using ADV.System;
 using CSV4Unity;
-using CSV4Unity.Fields;
+using ADV.Data;
 using System;
 using UnityEngine;
 
@@ -16,9 +16,9 @@ namespace ADV.Commands
     {
         public override bool ShouldEngineAwait => true;
 
-        public override async UniTask ExecuteAsync(LineData<ScenarioFields> lineData, CancellableTask cancellable)
+        public override async UniTask ExecuteAsync(CsvRow<ScenarioFields> lineData, CancellableTask cancellable)
         {
-            string scenarioName = lineData.GetOrDefault<string>(ScenarioFields.Arg1, null);
+            string scenarioName = GetOrDefault<string>(lineData, ScenarioFields.Arg1, null);
 
             if (!string.IsNullOrWhiteSpace(scenarioName))
             {

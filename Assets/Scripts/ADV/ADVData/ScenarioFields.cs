@@ -1,7 +1,9 @@
-﻿using CSV4Unity.Validation;
+﻿using CSV4Unity;
+using CSV4Unity.Validation;
 
-namespace CSV4Unity.Fields
+namespace ADV.Data
 {
+    [CsvSchema]
     public enum ScenarioFields
     {
         Command,

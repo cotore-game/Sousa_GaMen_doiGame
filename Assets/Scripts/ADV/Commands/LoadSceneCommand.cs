@@ -1,7 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using ADV.Core;
 using CSV4Unity;
-using CSV4Unity.Fields;
+using ADV.Data;
 using System;
 using SceneManagement;
 using UnityEngine.SceneManagement;
@@ -26,10 +26,10 @@ namespace ADV.Commands
             _sceneTransitioner = sceneTransitioner ?? throw new ArgumentNullException(nameof(sceneTransitioner));
         }
 
-        public override async UniTask ExecuteAsync(LineData<ScenarioFields> lineData, CancellableTask cancellable)
+        public override async UniTask ExecuteAsync(CsvRow<ScenarioFields> lineData, CancellableTask cancellable)
         {
-            string sceneName = lineData.GetOrDefault<string>(ScenarioFields.Arg1, null);
-            string modeStr = lineData.GetOrDefault<string>(ScenarioFields.Arg2, "Single");
+            string sceneName = GetOrDefault<string>(lineData, ScenarioFields.Arg1, null);
+            string modeStr = GetOrDefault<string>(lineData, ScenarioFields.Arg2, "Single");
 
             // Arg1からSceneIdを取得
             SceneId? sceneId = SceneRegistry.GetSceneId(sceneName);
@@ -48,9 +48,9 @@ namespace ADV.Commands
             await _sceneTransitioner.TransitionToAsync(sceneId.Value, mode);
         }
 
-        public override bool Validate(LineData<ScenarioFields> lineData, out string errorMessage)
+        public override bool Validate(CsvRow<ScenarioFields> lineData, out string errorMessage)
         {
-            string sceneName = lineData.GetOrDefault<string>(ScenarioFields.Arg1, null);
+            string sceneName = GetOrDefault<string>(lineData, ScenarioFields.Arg1, null);
 
             if (string.IsNullOrWhiteSpace(sceneName))
             {
