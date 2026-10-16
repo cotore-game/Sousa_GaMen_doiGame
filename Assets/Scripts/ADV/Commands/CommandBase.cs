@@ -1,5 +1,5 @@
 ﻿using CSV4Unity;
-using CSV4Unity.Fields;
+using ADV.Data;
 using Cysharp.Threading.Tasks;
 using ADV.Core;
 using System.Collections.Generic;
@@ -35,7 +35,7 @@ namespace ADV.Commands
         /// コマンドを実行します (バッチ処理)
         /// CanBatchProcess が true の場合に Executor から呼び出される
         /// </summary>
-        public virtual UniTask ExecuteBatchAsync(List<LineData<ScenarioFields>> batchLineData, CancellableTask cancellable)
+        public virtual UniTask ExecuteBatchAsync(List<CsvRow<ScenarioFields>> batchLineData, CancellableTask cancellable)
         {
             // デフォルト実装 (CanBatchProcessをtrueにしたのにオーバーライドしなかった場合)
             Debug.LogError($"[{GetType().Name}] CanBatchProcess is true, but ExecuteBatchAsync is not implemented.");
@@ -46,7 +46,7 @@ namespace ADV.Commands
         /// バッチ処理の完了を待機(await)すべきか判断する
         /// CanBatchProcess が true の場合に Executor から呼び出される
         /// </summary>
-        public virtual bool ShouldBatchAwait(List<LineData<ScenarioFields>> batchLineData)
+        public virtual bool ShouldBatchAwait(List<CsvRow<ScenarioFields>> batchLineData)
         {
             // デフォルトは待機する
             return true;
@@ -65,15 +65,25 @@ namespace ADV.Commands
         /// </summary>
         /// <param name="lineData">CSVの行データ</param>
         /// <param name="cancellable">キャンセル可能タスク</param>
-        public abstract UniTask ExecuteAsync(LineData<ScenarioFields> lineData, CancellableTask cancellable);
+        public abstract UniTask ExecuteAsync(CsvRow<ScenarioFields> lineData, CancellableTask cancellable);
 
         /// <summary>
         /// コマンドの実行前検証
         /// </summary>
-        public virtual bool Validate(LineData<ScenarioFields> lineData, out string errorMessage)
+        public virtual bool Validate(CsvRow<ScenarioFields> lineData, out string errorMessage)
         {
             errorMessage = null;
             return true;
+        }
+
+        /// <summary>
+        /// 空欄または型変換できない引数には、コマンドの既定値を使います。
+        /// </summary>
+        protected static T GetOrDefault<T>(CsvRow<ScenarioFields> row, ScenarioFields field, T defaultValue)
+        {
+            var cell = row[field];
+            if (cell.IsEmpty) return defaultValue;
+            return cell.TryGet<T>(out var value) ? value : defaultValue;
         }
 
         /// <summary>
