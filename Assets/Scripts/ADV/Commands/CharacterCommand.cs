@@ -3,7 +3,7 @@ using UnityEngine;
 using ADV.Core;
 using ADV.Presentation;
 using CSV4Unity;
-using CSV4Unity.Fields;
+using ADV.Data;
 using System;
 using System.Collections.Generic;
 
@@ -34,7 +34,7 @@ namespace ADV.Commands
         /// <summary>
         /// 単一行実行
         /// </summary>
-        public override async UniTask ExecuteAsync(LineData<ScenarioFields> lineData, CancellableTask cancellable)
+        public override async UniTask ExecuteAsync(CsvRow<ScenarioFields> lineData, CancellableTask cancellable)
         {
             await UniTask.Yield();
             Debug.LogWarning("[CharacterCommand] Should be executed via batch processing in AdvScenarioExecutor");
@@ -43,7 +43,7 @@ namespace ADV.Commands
         /// <summary>
         /// バッチ処理の実行ロジック
         /// </summary>
-        public override async UniTask ExecuteBatchAsync(List<LineData<ScenarioFields>> batchLineData, CancellableTask cancellable)
+        public override async UniTask ExecuteBatchAsync(List<CsvRow<ScenarioFields>> batchLineData, CancellableTask cancellable)
         {
             if (_characterPresenter == null)
             {
@@ -77,13 +77,13 @@ namespace ADV.Commands
         /// <summary>
         /// バッチ全体を待機すべきか判断する
         /// </summary>
-        public override bool ShouldBatchAwait(List<LineData<ScenarioFields>> batchLineData)
+        public override bool ShouldBatchAwait(List<CsvRow<ScenarioFields>> batchLineData)
         {
             // デフォルトは待機
             // バッチ内に一つでもfalseがあれば false になる
             foreach (var lineData in batchLineData)
             {
-                string waitFlag = lineData.GetOrDefault<string>(ScenarioFields.WaitType, "true");
+                string waitFlag = GetOrDefault<string>(lineData, ScenarioFields.WaitType, "true");
                 if (waitFlag.Equals("nowait", StringComparison.OrdinalIgnoreCase))
                 {
                     return false; // 待機しない
@@ -95,11 +95,11 @@ namespace ADV.Commands
         /// <summary>
         /// Characterコマンドからキャラクターデータをパース
         /// </summary>
-        private CharacterDisplayData ParseCharacterCommandData(LineData<ScenarioFields> lineData)
+        private CharacterDisplayData ParseCharacterCommandData(CsvRow<ScenarioFields> lineData)
         {
-            string name = lineData.GetOrDefault<string>(ScenarioFields.Arg1, null);
-            string expression = lineData.GetOrDefault<string>(ScenarioFields.Arg2, null);
-            float fade = lineData.GetOrDefault<float>(ScenarioFields.Arg3, 0.5f);
+            string name = GetOrDefault<string>(lineData, ScenarioFields.Arg1, null);
+            string expression = GetOrDefault<string>(lineData, ScenarioFields.Arg2, null);
+            float fade = GetOrDefault<float>(lineData, ScenarioFields.Arg3, 0.5f);
 
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(expression))
             {

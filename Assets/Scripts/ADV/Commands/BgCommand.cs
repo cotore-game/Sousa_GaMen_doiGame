@@ -2,7 +2,7 @@
 using ADV.Core;
 using ADV.Presentation;
 using CSV4Unity;
-using CSV4Unity.Fields;
+using ADV.Data;
 using System;
 using UnityEngine;
 
@@ -24,9 +24,9 @@ namespace ADV.Commands
         // 待機するコマンド
         public override bool ShouldEngineAwait => true;
 
-        public override async UniTask ExecuteAsync(LineData<ScenarioFields> lineData, CancellableTask cancellable)
+        public override async UniTask ExecuteAsync(CsvRow<ScenarioFields> lineData, CancellableTask cancellable)
         {
-            string bgName = lineData.GetOrDefault<string>(ScenarioFields.Arg1, null);
+            string bgName = GetOrDefault<string>(lineData, ScenarioFields.Arg1, null);
 
             if (!string.IsNullOrWhiteSpace(bgName))
             {
