@@ -2,21 +2,16 @@ using UnityEngine;
 
 namespace ActionPrototype
 {
-    [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
-    public sealed class Enemy : MonoBehaviour
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(Rigidbody2D), typeof(CapsuleCollider2D))]
+    public class Enemy : MonoBehaviour
     {
-        [SerializeField] private float moveSpeed = 2f;
-        [SerializeField] private int contactDamage = 1;
-
-        private void FixedUpdate()
-        {
-            // TODO (課題3): まずステージ1の丸型敵を左へ歩かせる。
-        }
-
-        private void OnCollisionEnter2D(Collision2D collision)
-        {
-            // TODO (課題3): Playerに接触したら1回だけダメージを与える。
-            // 踏みつけでも敵を倒さない（ステージ1仕様）。
-        }
+        // Walker.prefabとHopper.prefabには見た目と物理コンポーネントを設定済みです。
+        // まず丸型の敵が一定方向へ歩く処理を考えて実装してください。
+        // 次に、跳ねる敵の処理を追加してください。敵ごとのクラスに分けても構いません。
+        // 速度・方向・接地の状態をどう持つか、必要な変数や関数は自分で考えてください。
+        // WalkerのVisual: AnimatorのMoving(bool)で歩行アニメーション。
+        // HopperのVisual: AnimatorのHop(trigger)で跳躍アニメーション。
+        // HP・攻撃・ダメージ処理は、移動課題の次の段階で扱います。
     }
 }

@@ -2,15 +2,9 @@ using UnityEngine;
 
 namespace ActionPrototype
 {
-    public sealed class CameraFollow : MonoBehaviour
+    public class CameraFollow : MonoBehaviour
     {
-        [SerializeField] private Transform target;
-
-        private void LateUpdate()
-        {
-            // TODO (課題2): targetのX座標を追い、YとZは固定する。
-            // TODO (課題2): 開始地点より左へカメラが戻らないようにする。
-            // TODO (課題2): targetが未設定または消えた場合を安全に扱う。
-        }
+        // ActionDevでは、まず固定カメラで移動とジャンプを確認します。
+        // 追従課題に進んだら、対象の持ち方と更新タイミングを考えて実装してください。
     }
 }
