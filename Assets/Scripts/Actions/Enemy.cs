@@ -3,81 +3,92 @@ using UnityEngine;
 namespace ActionPrototype
 {
     /// <summary>
-    /// 【担当】敵自身の移動・HPと、接触したPlayerへのダメージ通知。
-    /// ステージ1の丸型(Walker)は左へ歩き続ける。悪魔型(Hopper)は左へ定期的に跳ねる。
-    /// Hopperは難しければWalkerとは違う移動でもよい、というステージ仕様。
-    /// プレイヤーが踏んでも敵は倒れず、プレイヤーが被弾する。接触ダメージは1。
-    /// 銃弾が命中したら敵は1ダメージ。敵自身のHPを減らす処理はTakeDamageが受け持つ。
-    /// 敵の初期HP、速度、ジャンプ間隔は数値指定がないためInspectorで調整する。
+    /// 敵の移動とHPを管理するクラスです。
+    /// 丸い敵は左へ歩き、悪魔の敵は左へ跳ねて進みます。
+    /// プレイヤーに当たると1ダメージを与えます。踏まれても敵は倒れません。
+    /// 弾が当たると敵のHPが1減り、0になると消えます。
+    ///
+    /// 敵のPrefab: Assets/Prefabs/Actions/Walker.prefab、Hopper.prefab
+    /// 画像: Assets/Sprites/Action/Walker/、Hopper/
+    /// アニメーション: Assets/Animations/Actions/Walker/、Hopper/
     /// </summary>
-    /// <remarks>
-    /// 【配置済み】Assets/Prefabs/Actions/Walker.prefab、Hopper.prefab。
-    /// 画像: Assets/Sprites/Action/Walker/Walk01.png・Walk02.png。
-    /// Hopper画像: Assets/Sprites/Action/Hopper/Standing.png・Crouching.png・Airborne.png。
-    /// クリップとController: Assets/Animations/Actions/Walker/、Hopper/。
-    /// 見た目の補足はAssets/ArtReferences/WalkerAnimation.jpg、HopperAnimation.jpg。
-    /// WalkerはSetWalkingAnimation(true)で歩行、falseで待機。直接ならAnimator.SetBool("Moving", true)。
-    /// 歩行再生倍率は子VisualのAnimator.SetFloat("WalkSpeed", 2f)で2倍。実際の移動速度とは別。
-    /// HopperはPlayHopAnimation()、または子VisualのAnimator.SetTrigger("Hop")で跳躍Clipを再生する。
-    /// Hopは見た目だけなので、接地・ジャンプ速度・次に跳ねる時刻はFixedUpdate等で別に管理する。
-    /// 【依存】Enemy→Player.TakeDamage、Bullet→Enemy.TakeDamage。EnemyはBulletやGunを参照しない。
-    /// 共通クラスで始め、動きの違いが複雑になったら別クラスへ分けてもよい。
-    /// 仕様元: アクション仕様と同資料の「レベルデザイン／ステージ1」。UIとボス攻撃は今回の範囲外。
-    /// https://docs.google.com/document/d/1jVNNvVS2BbfkY3wJzQv73Hr0PVPPb0P7_iovSdvB80Y/edit?tab=t.h5xvg7s5bct
-    /// </remarks>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody2D), typeof(CapsuleCollider2D))]
     public class Enemy : MonoBehaviour
     {
-        public enum MovementKind { Walker, Hopper }
+        // enumは、用意した選択肢から1つを選ぶための型です。
+        // ここでは「歩く敵」か「跳ねる敵」かを選べます。
+        // 例: movementKind == MovementKind.Walker なら、歩く敵という意味です。
+        public enum MovementKind
+        {
+            Walker, // 歩く敵
+            Hopper  // 跳ねる敵
+        }
 
-        [SerializeField] private MovementKind movementKind;
-        [SerializeField, Min(0f)] private float moveSpeed = 2f;
-        [SerializeField, Min(1)] private int maxHealth = 1;
-        [SerializeField, Min(1)] private int contactDamage = 1;
+        [SerializeField]
+        [Tooltip("敵の動き方です。Walkerは歩く敵、Hopperは跳ねる敵です。")]
+        private MovementKind movementKind;
 
+        [SerializeField, Min(0f)]
+        [Tooltip("敵が横に進む速さです。大きくすると速くなります。")]
+        private float moveSpeed = 2f;
+
+        [SerializeField, Min(1)]
+        [Tooltip("敵の最初のHPです。1なら弾が1発当たると倒れます。")]
+        private int maxHealth = 1;
+
+        [SerializeField, Min(1)]
+        [Tooltip("プレイヤーにぶつかったときに与えるダメージです。今は1です。")]
+        private int contactDamage = 1;
+
+        // アニメーションを再生するための部品です。
         private Animator animator;
 
+        // 今のHPです。変更する処理は、このクラスのTakeDamageに書きましょう。
         public int CurrentHealth { get; private set; }
+
+        // Inspectorで設定した値を、ほかのクラスから読むためのものです。
         public MovementKind Kind => movementKind;
         public float MoveSpeed => moveSpeed;
         public int ContactDamage => contactDamage;
 
         private void Awake()
         {
+            // Awakeには、敵が作られたときの準備を書きます。
             CurrentHealth = maxHealth;
             animator = GetComponentInChildren<Animator>();
-            // TODO (課題3): Rigidbody2Dを取得する。Hopperの間隔・ジャンプ力・接地状態なども考える。
+            // TODO: Rigidbody2Dも取得しておきましょう。
         }
 
         private void FixedUpdate()
         {
-            // TODO (課題3): movementKindがWalkerなら左へ歩かせる。Y速度を不用意に消さない。
-            // TODO (課題3): Hopperなら接地と間隔を確認して左へジャンプさせ、PlayHopAnimation()も呼ぶ。
-            // アニメーション再生だけではGameObjectは移動しない。
+            // FixedUpdateには、Rigidbody2Dで動かすなど、物理演算の処理を書きます。
+            // TODO: movementKindがWalkerなら、moveSpeedの速さで左へ歩かせましょう。
+            // TODO: Hopperなら、一定時間ごとに左へジャンプさせましょう。
         }
 
         private void OnCollisionEnter2D(Collision2D collision)
         {
-            // TODO (課題3): 接触相手にPlayerがあれば、そのTakeDamage(contactDamage)へ通知する。
-            // 例: collision.gameObject.TryGetComponent<Player>(out var player)。
-            // 踏みつけでも敵を倒さない。OnCollisionStay2Dで毎フレームHPを減らさないよう注意する。
+            // 何かにぶつかったときに呼ばれます。collisionにはぶつかった相手の情報が入ります。
+            // TODO: 相手がPlayerなら、そのPlayerのTakeDamage(contactDamage)を呼びましょう。
         }
 
         public void TakeDamage(int amount)
         {
-            // TODO (課題4): 0以下のamountを無視し、自身のHPを0未満にせず減らす。HP0の敵を消す。
-            // Bulletはこの関数を呼ぶだけ。Enemy側でBulletを探したり参照したりする必要はない。
+            // amountは受けるダメージの数です。
+            // TODO: CurrentHealthを減らし、0になったらDestroyでこの敵を消しましょう。
         }
 
-        /// <summary>Walkerの見た目を切り替える。移動を実装した箇所から呼ぶ。</summary>
+        /// <summary>歩く敵のアニメーションです。trueで歩き、falseで待機します。</summary>
         public void SetWalkingAnimation(bool moving)
         {
+            // 歩く処理を作ったらSetWalkingAnimation(true)を呼んでください。
+            // 再生速度を変える例: animator.SetFloat("WalkSpeed", 2f); で2倍です。
             if (animator != null && movementKind == MovementKind.Walker)
                 animator.SetBool("Moving", moving);
         }
 
-        /// <summary>Hopperが実際に跳ぶタイミングで呼ぶ。Clipは再生後に待機へ戻る。</summary>
+        /// <summary>跳ねる敵のアニメーションです。ジャンプするタイミングで呼んでください。</summary>
         public void PlayHopAnimation()
         {
             if (animator != null && movementKind == MovementKind.Hopper)

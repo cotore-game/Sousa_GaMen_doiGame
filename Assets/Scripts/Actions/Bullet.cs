@@ -3,59 +3,60 @@ using UnityEngine;
 namespace ActionPrototype
 {
     /// <summary>
-    /// 【担当】発射後の弾自身の移動、命中時のEnemyへのダメージ通知、自身の消滅。
-    /// 【仕様】向いていた方向へ等速で水平移動。速度は目で追える程度に調整する。
-    /// 敵と重なったらEnemy.TakeDamage(1)へ通知し、弾は消える。
-    /// ダメージ量は1。敵のHPを直接書き換えず、HP管理はEnemyへ任せる。
-    /// Gun／Playerの状態は知らなくてよい。Initializeの引数で発射方向だけ受け取る。
+    /// 発射された弾を動かすクラスです。
+    /// 右か左へ同じ速さで進み、敵に当たったら1ダメージを与えて消えます。
+    ///
+    /// 弾が当たらなかったときの動きは仕様に書かれていないので、lifeTimeを用意しました。
+    /// この秒数が経ったら、Destroyで弾を削除しましょう。
+    ///
+    /// 弾のPrefab: Assets/Prefabs/Actions/Bullet.prefab
+    /// 弾の画像: Assets/Sprites/Action/Projectiles/Bullet.png
     /// </summary>
-    /// <remarks>
-    /// 【作成済み】Assets/Prefabs/Actions/Bullet.prefab。
-    /// 画像: Assets/Sprites/Action/Projectiles/Bullet.png。別の銃口・銃本体スプライトは不要。
-    /// Rigidbody2Dは重力0、回転固定、CircleCollider2DはIs Triggerを有効化済み。
-    /// 重なりはOnTriggerEnter2Dで扱う。通常のOnCollisionEnter2Dでは通知されない。
-    /// GunのTryFireからInstantiateしてInitialize(Vector2.right/left)を呼ぶ想定。
-    /// Playerの当たり判定内で生成せず、設定済みのMuzzleRight/MuzzleLeftを発射位置に使う。
-    /// 壁・画面外・寿命での消滅はGoogle仕様に明記がない。弾が残り続けないよう寿命を設けるのは推奨追加案。
-    /// InspectorのlifeTime=5秒はその仮値。Awakeで消す処理はまだ入れていないので課題として実装する。
-    /// 初期speed=6も調整用の仮値。歩行速度やアニメ再生速度とは独立した値。
-    /// 仕様元: https://docs.google.com/document/d/1jVNNvVS2BbfkY3wJzQv73Hr0PVPPb0P7_iovSdvB80Y/edit?tab=t.6v0tp4lmqdo1
-    /// </remarks>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
     public class Bullet : MonoBehaviour
     {
-        [SerializeField, Min(0f)] private float speed = 6f;
-        [SerializeField, Min(1)] private int damage = 1;
-        [SerializeField, Min(0.1f)] private float lifeTime = 5f;
+        [SerializeField, Min(0f)]
+        [Tooltip("弾が進む速さです。目で追えるくらいの速さに調整しましょう。")]
+        private float speed = 6f;
 
+        [SerializeField, Min(1)]
+        [Tooltip("敵に当たったときに与えるダメージです。今は1です。")]
+        private int damage = 1;
+
+        [SerializeField, Min(0.1f)]
+        [Tooltip("弾が消えるまでの秒数です。5なら、作られてから5秒後に消します。")]
+        private float lifeTime = 5f;
+
+        // 設定した速さ・ダメージ・寿命を、ほかのクラスから読むためのものです。
         public float Speed => speed;
         public int Damage => damage;
         public float LifeTime => lifeTime;
 
         private void Awake()
         {
-            // TODO (課題4): Rigidbody2Dを取得する。寿命で消すならDestroy(gameObject, lifeTime)を調べる。
+            // Awakeには、弾が作られたときの準備を書きます。
+            // TODO: Rigidbody2Dを取得しましょう。
+            // TODO: Destroy(gameObject, lifeTime)で、lifeTime秒後に消す予約をしましょう。
         }
 
         public void Initialize(Vector2 direction)
         {
-            // TODO (課題4): 方向を保持し、Y速度を0にした等速の水平移動を準備する。
-            // Gunそのものを保存する必要はない。右／左の値だけ渡してもらう。
+            // directionには進む向きが入ります。Vector2.rightは右、Vector2.leftは左です。
+            // TODO: この向きを覚えて、弾を動かすときに使いましょう。
         }
 
         private void FixedUpdate()
         {
-            // TODO (課題4): Rigidbody2D.linearVelocityなどで等速移動させる。
-            // 速度を代入する方式と毎フレームAddForceする方式の違いを考える。
+            // FixedUpdateには、Rigidbody2Dで動かすなど、物理演算の処理を書きます。
+            // TODO: 覚えた向きとspeedを使って、横へ同じ速さで進ませましょう。
         }
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            // TODO (課題4): EnemyならTakeDamage(damage)を1回だけ呼び、この弾をDestroyする。
-            // 例: other.TryGetComponent<Enemy>(out var enemy)。GunやPlayerへ逆参照しない。
-            // Destroyは即時ではないので、消えるまでに複数のColliderへ命中しても二重加算しない工夫を考える。
-            // 敵以外（床やPlayer）に触れたときの扱いは別に決める。
+            // 弾の当たり判定が何かに重なったときに呼ばれます。otherが重なった相手です。
+            // TODO: 相手がEnemyなら、TakeDamage(damage)でダメージを与えましょう。
+            // TODO: 当たったらDestroy(gameObject)で弾を消しましょう。
         }
     }
 }
