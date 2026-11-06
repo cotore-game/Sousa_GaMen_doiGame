@@ -25,6 +25,12 @@ namespace ADV.System
         [SerializeField] private ChoiceView choiceViewPrefab;
         [SerializeField] private BackgroundView backgroundViewPrefab;
 
+        [Header("Novel Assets")]
+        [Tooltip("台本内の名前とAddressablesの画像を対応付けるCatalog")]
+        [SerializeField]
+        private NovelAssetCatalog novelAssetCatalog;
+        private NovelAssetLoader _assetLoader;
+
         [Header("Debug Settings")]
         [SerializeField] private bool enableDebugLog = true;
         [SerializeField] private TextAsset defaultScenarioData = null;
@@ -82,11 +88,12 @@ namespace ADV.System
 
             // Presenter層の生成
             _textPresenter = new TextPresenter(textView);
-            _characterPresenter = new CharacterPresenter(characterContainer, characterViewPrefab);
+            _assetLoader = new NovelAssetLoader(novelAssetCatalog);
+            _characterPresenter = new CharacterPresenter(characterContainer, characterViewPrefab, _assetLoader);
             _choicePresenter = new ChoicePresenter(choiceViewPrefab, _textPresenter);
             
             if (backgroundView != null)
-                _backgroundPresenter = new BackgroundPresenter(backgroundView);
+                _backgroundPresenter = new BackgroundPresenter(backgroundView, _assetLoader);
 
             // コマンドが必要とする依存関係をまとめる
             var dependencies = new CommandDependencies(
@@ -410,8 +417,7 @@ namespace ADV.System
             IsExecuting = false;
             _activeVisualTasks.Clear();
 
-            // キャッシュクリア
-            _characterPresenter?.ClearCache();
+            // 分岐先でも表示中の画像を使うため、素材はADVシーンの終了まで保持する。
 
             await UniTask.Yield();
         }
@@ -455,6 +461,7 @@ namespace ADV.System
             _characterPresenter?.Dispose();
             _choicePresenter?.Dispose();
             _backgroundPresenter?.Dispose();
+            _assetLoader?.Dispose();
 
             if (_instance == this)
             {

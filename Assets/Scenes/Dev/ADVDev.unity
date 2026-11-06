@@ -342,9 +342,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bgImage: {fileID: 1237024132}
-  slothHomeSprite: {fileID: 21300000, guid: a33cb0d9aa3af28428589793cd3b4b78, type: 3}
-  greengrocerSprite: {fileID: 21300000, guid: 2ce2b0c789e7dcf42970b20cd7202a26, type: 3}
-  forestSprite: {fileID: 21300000, guid: d7a38dff235d9954eb8be73c72eb07f1, type: 3}
 --- !u!1 &315602244
 GameObject:
   m_ObjectHideFlags: 0
@@ -1066,7 +1063,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 2ce2b0c789e7dcf42970b20cd7202a26, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -1351,6 +1348,7 @@ MonoBehaviour:
   characterContainer: {fileID: 2139662645}
   choiceViewPrefab: {fileID: 1302983731}
   backgroundViewPrefab: {fileID: 274156376}
+  novelAssetCatalog: {fileID: 11400000, guid: c56c60d39f2c7df47a2b769dfdcb7871, type: 2}
   enableDebugLog: 1
   defaultScenarioData: {fileID: 4900000, guid: 94301f99d392e924b88312e2e8b15169, type: 3}
 --- !u!1 &2015185590
