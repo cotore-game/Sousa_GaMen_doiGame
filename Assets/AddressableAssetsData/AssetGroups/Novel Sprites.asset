@@ -1,0 +1,138 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Novel Sprites
+  m_EditorClassIdentifier:
+  m_GroupName: Novel Sprites
+  m_GUID: bd16f0bc5d5fc6540b33f38b60b0035e
+  m_SerializeEntries:
+  - m_GUID: 0d62065e3bcb7504baac33cbd346e7a5
+    m_Address: Novel/Mendomon/Smug
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 211b582b371a2e44d8ea82cb2d2a2455
+    m_Address: Novel/Mendomon/Dejected
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2ce2b0c789e7dcf42970b20cd7202a26
+    m_Address: Novel/Backgrounds/Greengrocer
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3c24dda447a63bf4892b8a3467727f81
+    m_Address: Novel/TeruoNakata/Surprised
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3e40ddc8dd3a1da4285744fc6ff4ba5c
+    m_Address: Novel/YonekoNakata/AngryAlternate
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4caf412a87fa350418d890f54868bbb3
+    m_Address: Novel/TeruoNakata/Determined
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4e8e5d55e0d7d854eb771e0cb7486cfd
+    m_Address: Novel/Props/Matchlock
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 52cf76d9cb2fd8c4abce9026e9c61847
+    m_Address: Novel/TeruoNakata/Dejected
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5886fc327eaf7254f84f776eb0ddf67a
+    m_Address: Novel/Greengrocer/Neutral
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6a7224d8b274d5042b1a162285957e75
+    m_Address: Novel/YonekoNakata/Angry
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7dd4727545247614f9d63dff3c6dd9f9
+    m_Address: Novel/Mendomon/Neutral
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8021431d11fc8bc478379c49c8dcd69e
+    m_Address: Novel/Mendomon/TearyEyed
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8dda1f5ebe1e6e74fb6bac74ba6a0782
+    m_Address: Novel/Mendomon/Crying
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a2b92dca3bdfcd04da3dd2eca0333bb8
+    m_Address: Novel/TeruoNakata/Neutral
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a33cb0d9aa3af28428589793cd3b4b78
+    m_Address: Novel/Backgrounds/SlothHome
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: abf3d081f1a628a42a617df94b636ac6
+    m_Address: Novel/Mendomon/Annoyed
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b53baf5914eb76a4286793e852a4701d
+    m_Address: Novel/Mendomon/Surprised
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d7a38dff235d9954eb8be73c72eb07f1
+    m_Address: Novel/Backgrounds/Forest
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d87324fb82619264d8a8af57627ffb32
+    m_Address: Novel/Mendomon/Happy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: db9481c0232bdd74087c7b0adea12e4b
+    m_Address: Novel/TeruoNakata/Annoyed
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e89ad6ddf58703547a62e6741c3ff914
+    m_Address: Novel/Mendomon/Furious
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f528544f7f1118249b11f65b913e609e
+    m_Address: Novel/Mendomon/Blushing
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f5387fcce14e0454eb51d51d1be6c4c1
+    m_Address: Novel/YonekoNakata/Neutral
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: e3b5b79f0f9bae044823a86f9a9715ba, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: bdc97d0aea5b815489a347b1951b383a, type: 2}
+    - {fileID: 11400000, guid: 7884f87716984b044a00998db731b67a, type: 2}
