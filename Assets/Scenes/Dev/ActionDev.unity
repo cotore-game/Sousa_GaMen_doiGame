@@ -290,6 +290,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 62474575779361f4da8a3e383ec8bbf7, type: 3}
+--- !u!4 &1414994031 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3272798710101556915, guid: 62474575779361f4da8a3e383ec8bbf7, type: 3}
+  m_PrefabInstance: {fileID: 1414994030}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1550463500
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -378,6 +383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c836cdf183d46658771a24f529bb133, type: 3}
   m_Name:
   m_EditorClassIdentifier:
+  target: {fileID: 1414994031}
 --- !u!81 &1912532017
 AudioListener:
   m_ObjectHideFlags: 0
