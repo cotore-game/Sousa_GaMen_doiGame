@@ -6,7 +6,8 @@ using ADV.Commands;
 using ADV.Core;
 using ADV.Presentation;
 using CSV4Unity;
-using CSV4Unity.Fields;
+using ADV.Data;
+using CSV4Unity.Validation;
 using SceneManagement;
 
 namespace ADV.System
@@ -24,6 +25,12 @@ namespace ADV.System
         [SerializeField] private ChoiceView choiceViewPrefab;
         [SerializeField] private BackgroundView backgroundViewPrefab;
 
+        [Header("Novel Assets")]
+        [Tooltip("台本内の名前とAddressablesの画像を対応付けるCatalog")]
+        [SerializeField]
+        private NovelAssetCatalog novelAssetCatalog;
+        private NovelAssetLoader _assetLoader;
+
         [Header("Debug Settings")]
         [SerializeField] private bool enableDebugLog = true;
         [SerializeField] private TextAsset defaultScenarioData = null;
@@ -35,7 +42,7 @@ namespace ADV.System
         private BackgroundPresenter _backgroundPresenter;
 
         // 実行状態
-        private CsvData<ScenarioFields> _currentScenario;
+        private List<CsvRow<ScenarioFields>> _currentScenario;
         private int _currentLineIndex;
         private CancellableTask _scenarioCancellable;
         private string _currentScenarioName;
@@ -49,7 +56,7 @@ namespace ADV.System
         // 実行状態プロパティ
         public bool IsExecuting { get; private set; }
         public bool IsPaused { get; private set; }
-        public int TotalLines => _currentScenario?.RowCount ?? 0;
+        public int TotalLines => _currentScenario?.Count ?? 0;
         public int CurrentLine => _currentLineIndex;
         public float Progress => TotalLines > 0 ? (float)_currentLineIndex / TotalLines : 0f;
         public string CurrentScenarioName => _currentScenarioName;
@@ -81,11 +88,12 @@ namespace ADV.System
 
             // Presenter層の生成
             _textPresenter = new TextPresenter(textView);
-            _characterPresenter = new CharacterPresenter(characterContainer, characterViewPrefab);
+            _assetLoader = new NovelAssetLoader(novelAssetCatalog);
+            _characterPresenter = new CharacterPresenter(characterContainer, characterViewPrefab, _assetLoader);
             _choicePresenter = new ChoicePresenter(choiceViewPrefab, _textPresenter);
             
             if (backgroundView != null)
-                _backgroundPresenter = new BackgroundPresenter(backgroundView);
+                _backgroundPresenter = new BackgroundPresenter(backgroundView, _assetLoader);
 
             // コマンドが必要とする依存関係をまとめる
             var dependencies = new CommandDependencies(
@@ -164,22 +172,11 @@ namespace ADV.System
 
             try
             {
-                // CSVロード
-                var options = new CsvLoaderOptions
-                {
-                    HasHeader = true,
-                    TrimFields = true,
-                    IgnoreEmptyLines = true,
-                    CommentPrefix = "#",
-                    ValidationEnabled = true,
-                    ThrowOnValidationError = false
-                };
-
                 _currentScenarioName = csvFile.name;
-                _currentScenario = CSVLoader.LoadCSV<ScenarioFields>(csvFile, options);
+                _currentScenario = LoadScenarioRows(csvFile);
                 _currentLineIndex = 0;
 
-                DebugLog($"Loaded scenario: {csvFile.name} ({_currentScenario.RowCount} lines)");
+                DebugLog($"Loaded scenario: {csvFile.name} ({_currentScenario.Count} lines)");
 
                 // シナリオ実行開始
                 _scenarioCancellable = new CancellableTask();
@@ -202,19 +199,55 @@ namespace ADV.System
         }
 
         /// <summary>
+        /// CSVを検証し、コメント行を除いた実行対象の行ビューを返します。
+        /// </summary>
+        private static List<CsvRow<ScenarioFields>> LoadScenarioRows(TextAsset csvFile)
+        {
+            var options = new CsvParseOptions
+            {
+                HasHeader = true,
+                TrimUnquotedFields = true,
+                IgnoreEmptyRecords = true
+            };
+            var table = CSVLoader.LoadTable<ScenarioFields>(csvFile, options);
+
+            // CSV4Unity 0.3では、解析と属性による検証を別々に実行する。
+            var validation = CsvValidator.Validate(table);
+            foreach (var error in validation.Errors)
+            {
+                Debug.LogError($"[AdvScenarioExecutor] CSV validation in {csvFile.name}: {error}");
+            }
+            foreach (var warning in validation.Warnings)
+            {
+                Debug.LogWarning($"[AdvScenarioExecutor] CSV validation in {csvFile.name}: {warning}");
+            }
+
+            // CommentPrefix廃止に伴い、CSVレコード単位でコメントを除外する。
+            // セル内の改行や引用符、本文中の「#」はそのまま保持する。
+            var rows = new List<CsvRow<ScenarioFields>>(table.RowCount);
+            for (int i = 0; i < table.RowCount; i++)
+            {
+                var row = table.Row(i);
+                if (row[ScenarioFields.Command].GetString().StartsWith("#", StringComparison.Ordinal)) continue;
+                rows.Add(row);
+            }
+            return rows;
+        }
+
+        /// <summary>
         /// メインシナリオ実行ループ
         /// </summary>
         private async UniTask ExecuteScenarioLoop()
         {
-            while (_currentLineIndex < _currentScenario.RowCount)
+            while (_currentLineIndex < _currentScenario.Count)
             {
                 if (_scenarioCancellable.IsCancellationRequested) break;
 
                 // ポーズ中は待機
                 await UniTask.WaitUntil(() => !IsPaused);
 
-                var lineData = _currentScenario.Rows[_currentLineIndex];
-                var commandName = lineData.Get<string>(ScenarioFields.Command);
+                var lineData = _currentScenario[_currentLineIndex];
+                var commandName = lineData[ScenarioFields.Command].GetString();
 
                 // コマンドインスタンスを取得
                 var command = _commandFactory.CreateCommandInstance(commandName);
@@ -284,15 +317,15 @@ namespace ADV.System
         /// <summary>
         /// 連続する同じコマンドの行データを収集
         /// </summary>
-        private List<LineData<ScenarioFields>> CollectBatchCommands(int startIndex, string batchCommandName)
+        private List<CsvRow<ScenarioFields>> CollectBatchCommands(int startIndex, string batchCommandName)
         {
-            var batch = new List<LineData<ScenarioFields>>();
+            var batch = new List<CsvRow<ScenarioFields>>();
             int scanIndex = startIndex;
 
-            while (scanIndex < _currentScenario.RowCount)
+            while (scanIndex < _currentScenario.Count)
             {
-                var lineData = _currentScenario.Rows[scanIndex];
-                var commandName = lineData.Get<string>(ScenarioFields.Command);
+                var lineData = _currentScenario[scanIndex];
+                var commandName = lineData[ScenarioFields.Command].GetString();
 
                 // 指定されたコマンド名と一致するか
                 if (commandName.Equals(batchCommandName, StringComparison.OrdinalIgnoreCase))
@@ -313,7 +346,7 @@ namespace ADV.System
         /// <summary>
         /// コマンド実行の中核ロジック
         /// </summary>
-        private async UniTask ExecuteCommand(CommandBase command, LineData<ScenarioFields> lineData)
+        private async UniTask ExecuteCommand(CommandBase command, CsvRow<ScenarioFields> lineData)
         {
             // コマンド検証
             if (!command.Validate(lineData, out var errorMsg))
@@ -384,8 +417,7 @@ namespace ADV.System
             IsExecuting = false;
             _activeVisualTasks.Clear();
 
-            // キャッシュクリア
-            _characterPresenter?.ClearCache();
+            // 分岐先でも表示中の画像を使うため、素材はADVシーンの終了まで保持する。
 
             await UniTask.Yield();
         }
@@ -429,6 +461,7 @@ namespace ADV.System
             _characterPresenter?.Dispose();
             _choicePresenter?.Dispose();
             _backgroundPresenter?.Dispose();
+            _assetLoader?.Dispose();
 
             if (_instance == this)
             {

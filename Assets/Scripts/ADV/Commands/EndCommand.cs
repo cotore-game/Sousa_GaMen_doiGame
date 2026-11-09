@@ -1,7 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using ADV.Core;
 using CSV4Unity;
-using CSV4Unity.Fields;
+using ADV.Data;
 
 namespace ADV.Commands
 {
@@ -12,7 +12,7 @@ namespace ADV.Commands
     {
         public override bool ShouldEngineAwait => true;
 
-        public override async UniTask ExecuteAsync(LineData<ScenarioFields> lineData, CancellableTask cancellable)
+        public override async UniTask ExecuteAsync(CsvRow<ScenarioFields> lineData, CancellableTask cancellable)
         {
             if (GameFlowManager.Instance != null)
             {

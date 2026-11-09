@@ -6,7 +6,7 @@ using ADV.Core;
 using ADV.Presentation;
 using ADV.System;
 using CSV4Unity;
-using CSV4Unity.Fields;
+using ADV.Data;
 
 namespace ADV.Commands
 {
@@ -40,12 +40,12 @@ namespace ADV.Commands
         public override bool ShouldEngineAwait => true;
 
         // 単一行での実行
-        public override async UniTask ExecuteAsync(LineData<ScenarioFields> lineData, CancellableTask cancellable)
+        public override async UniTask ExecuteAsync(CsvRow<ScenarioFields> lineData, CancellableTask cancellable)
         {
             // CSVデータのパース
 
             // Text を質問文として使用
-            string question = lineData.GetOrDefault<string>(ScenarioFields.Text, "");
+            string question = GetOrDefault<string>(lineData, ScenarioFields.Text, "");
 
             // Arg1 ～ Arg6 を選択肢ラベルとして収集
             var choices = new List<string>();
@@ -61,7 +61,7 @@ namespace ADV.Commands
 
             foreach (var field in argFields)
             {
-                string label = lineData.GetOrDefault<string>(field, "");
+                string label = GetOrDefault<string>(lineData, field, "");
                 if (!string.IsNullOrWhiteSpace(label))
                 {
                     choices.Add(label.Trim());
