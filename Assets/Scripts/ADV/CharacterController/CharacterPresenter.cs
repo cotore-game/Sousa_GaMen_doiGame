@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using ADV.Core;
 using System;
+using ADV.Data;
 
 namespace ADV.Presentation
 {
@@ -18,16 +19,16 @@ namespace ADV.Presentation
         // アクティブなキャラクター
         private readonly Dictionary<string, CharacterView> _activeCharacters = new();
 
-        // スプライトキャッシュ
-        private readonly Dictionary<string, Sprite> _spriteCache = new();
+        private readonly NovelAssetLoader _assetLoader;
 
         private CancellableTask _operationCancellable;
         private const float DEFAULT_FADE_DURATION = 0.5f;
 
-        public CharacterPresenter(Transform container, CharacterView prefab)
+        public CharacterPresenter(Transform container, CharacterView prefab, NovelAssetLoader assetLoader)
         {
             _characterContainer = container;
             _characterPrefab = prefab;
+            _assetLoader = assetLoader;
             _operationCancellable = new CancellableTask();
         }
 
@@ -39,6 +40,12 @@ namespace ADV.Presentation
             CancellableTask cancellable = null)
         {
             var effectiveCancellable = cancellable ?? _operationCancellable;
+
+            // 新しい画像が揃うまで、現在の表示を維持する。
+            var sprites = await UniTask.WhenAll(characters.Select(c =>
+                _assetLoader.LoadCharacterAsync(c.Name, c.Expression, effectiveCancellable.Token)));
+            if (effectiveCancellable.IsCancellationRequested || _operationCancellable.IsCancellationRequested)
+                throw new OperationCanceledException();
 
             // 現在と新規のキーセット
             var oldKeys = _activeCharacters.Keys.ToHashSet();
@@ -60,6 +67,8 @@ namespace ADV.Presentation
             }).ToList();
 
             await UniTask.WhenAll(fadeOutTasks);
+            if (effectiveCancellable.IsCancellationRequested || _operationCancellable.IsCancellationRequested)
+                throw new OperationCanceledException();
 
             foreach (var key in toRemove)
             {
@@ -93,7 +102,7 @@ namespace ADV.Presentation
                 else
                 {
                     // 新規キャラ生成
-                    var sprite = LoadSprite(charData.Name, charData.Expression);
+                    var sprite = sprites[i];
 
                     if (sprite == null)
                     {
@@ -128,53 +137,9 @@ namespace ADV.Presentation
             await ShowCharacters(new List<CharacterDisplayData>(), cancellable);
         }
 
-        /// <summary>
-        /// Resourcesからスプライトをロード
-        /// パス例: "Characters/Aoi/smile" または "Characters/Taro/neutral"
-        /// </summary>
-        private Sprite LoadSprite(string characterName, string expression)
-        {
-            if (string.IsNullOrEmpty(expression))
-            {
-                Debug.LogWarning($"[CharacterPresenter] Expression is empty for {characterName}");
-                return null;
-            }
-
-            string resourcePath = $"Novel/{characterName}/{expression}";
-
-            // キャッシュチェック
-            if (_spriteCache.TryGetValue(resourcePath, out var cachedSprite))
-            {
-                return cachedSprite;
-            }
-
-            // Resourcesからロード
-            var sprite = Resources.Load<Sprite>(resourcePath);
-
-            if (sprite == null)
-            {
-                Debug.LogWarning($"[CharacterPresenter] Sprite not found: {resourcePath}");
-                return null;
-            }
-
-            // キャッシュに保存
-            _spriteCache[resourcePath] = sprite;
-            return sprite;
-        }
-
-        /// <summary>
-        /// キャッシュクリア
-        /// </summary>
-        public void ClearCache()
-        {
-            _spriteCache.Clear();
-            Debug.Log("[CharacterPresenter] Sprite cache cleared");
-        }
-
         public void Dispose()
         {
             _operationCancellable?.Dispose();
-            ClearCache();
         }
     }
 }

@@ -30,7 +30,7 @@ namespace ADV.Commands
 
             if (!string.IsNullOrWhiteSpace(bgName))
             {
-                await _presenter.ChangeBackgroundAsync(bgName.Trim());
+                await _presenter.ChangeBackgroundAsync(bgName.Trim(), cancellable.Token);
             }
             else
             {

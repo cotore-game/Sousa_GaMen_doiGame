@@ -1,0 +1,197 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71645d5756855e74f8679ae7cbaba100, type: 3}
+  m_Name: NovelAssetCatalog
+  m_EditorClassIdentifier:
+  characters:
+  - characterName: "\u4E2D\u7530\u3066\u308B\u304A"
+    expression: "\u30C7\u30D5\u30A9\u30EB\u30C8"
+    sprite:
+      m_AssetGUID: a2b92dca3bdfcd04da3dd2eca0333bb8
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u4E2D\u7530\u3066\u308B\u304A"
+    expression: "\u3057\u3087\u307C\u3093"
+    sprite:
+      m_AssetGUID: 52cf76d9cb2fd8c4abce9026e9c61847
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u4E2D\u7530\u3066\u308B\u304A"
+    expression: "\u6C7A\u610F"
+    sprite:
+      m_AssetGUID: 4caf412a87fa350418d890f54868bbb3
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u4E2D\u7530\u3066\u308B\u304A"
+    expression: "\u30E0\u30B9\u30C3\u3068"
+    sprite:
+      m_AssetGUID: db9481c0232bdd74087c7b0adea12e4b
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u4E2D\u7530\u3066\u308B\u304A"
+    expression: "\u9A5A\u3044\u305F"
+    sprite:
+      m_AssetGUID: 3c24dda447a63bf4892b8a3467727f81
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u4E2D\u7530\u3088\u306D\u5B50"
+    expression: "\u30C7\u30D5\u30A9\u30EB\u30C8"
+    sprite:
+      m_AssetGUID: f5387fcce14e0454eb51d51d1be6c4c1
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u4E2D\u7530\u3088\u306D\u5B50"
+    expression: "\u6012\u308A"
+    sprite:
+      m_AssetGUID: 6a7224d8b274d5042b1a162285957e75
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u4E2D\u7530\u3088\u306D\u5B50"
+    expression: "\u6012\u308A\u5225"
+    sprite:
+      m_AssetGUID: 3e40ddc8dd3a1da4285744fc6ff4ba5c
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u516B\u767E\u5C4B"
+    expression: "\u516B\u767E\u5C4B"
+    sprite:
+      m_AssetGUID: 5886fc327eaf7254f84f776eb0ddf67a
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u5996\u7CBE\u3081\u3093\u3069\u3082\u3093"
+    expression: "\u30C7\u30D5\u30A9\u30EB\u30C8"
+    sprite:
+      m_AssetGUID: 7dd4727545247614f9d63dff3c6dd9f9
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u5996\u7CBE\u3081\u3093\u3069\u3082\u3093"
+    expression: "\u3057\u3087\u307C\u3093"
+    sprite:
+      m_AssetGUID: 211b582b371a2e44d8ea82cb2d2a2455
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u5996\u7CBE\u3081\u3093\u3069\u3082\u3093"
+    expression: "\u3080\u3059\u3063"
+    sprite:
+      m_AssetGUID: abf3d081f1a628a42a617df94b636ac6
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u5996\u7CBE\u3081\u3093\u3069\u3082\u3093"
+    expression: "\u7B11\u9854"
+    sprite:
+      m_AssetGUID: d87324fb82619264d8a8af57627ffb32
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u5996\u7CBE\u3081\u3093\u3069\u3082\u3093"
+    expression: "\u6CE3\u3044\u305F"
+    sprite:
+      m_AssetGUID: 8dda1f5ebe1e6e74fb6bac74ba6a0782
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u5996\u7CBE\u3081\u3093\u3069\u3082\u3093"
+    expression: "\u8D64\u9762"
+    sprite:
+      m_AssetGUID: f528544f7f1118249b11f65b913e609e
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u5996\u7CBE\u3081\u3093\u3069\u3082\u3093"
+    expression: "\u9A5A\u3044\u305F"
+    sprite:
+      m_AssetGUID: b53baf5914eb76a4286793e852a4701d
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u5996\u7CBE\u3081\u3093\u3069\u3082\u3093"
+    expression: "\u6012\u308A"
+    sprite:
+      m_AssetGUID: e89ad6ddf58703547a62e6741c3ff914
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u5996\u7CBE\u3081\u3093\u3069\u3082\u3093"
+    expression: "\u30C9\u30E4\u9854"
+    sprite:
+      m_AssetGUID: 0d62065e3bcb7504baac33cbd346e7a5
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u5996\u7CBE\u3081\u3093\u3069\u3082\u3093"
+    expression: "\u6D99\u76EE"
+    sprite:
+      m_AssetGUID: 8021431d11fc8bc478379c49c8dcd69e
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - characterName: "\u706B\u7E04\u9283"
+    expression: "\u30C7\u30D5\u30A9\u30EB\u30C8"
+    sprite:
+      m_AssetGUID: 4e8e5d55e0d7d854eb771e0cb7486cfd
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  backgrounds:
+  - backgroundName: "\u30CA\u30DE\u30B1\u30E2\u30CE\u306E\u5BB6"
+    sprite:
+      m_AssetGUID: a33cb0d9aa3af28428589793cd3b4b78
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - backgroundName: "\u516B\u767E\u5C4B"
+    sprite:
+      m_AssetGUID: 2ce2b0c789e7dcf42970b20cd7202a26
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
+  - backgroundName: "\u68EE\u306E\u80CC\u666F"
+    sprite:
+      m_AssetGUID: d7a38dff235d9954eb8be73c72eb07f1
+      m_SubObjectName:
+      m_SubObjectType:
+      m_SubObjectGUID:
+      m_EditorAssetChanged: 0
